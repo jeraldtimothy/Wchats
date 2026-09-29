@@ -4,12 +4,12 @@ Study: [doc/study/0002-phase-2-attachments-search-memories-profile.md](../study/
 Branch: `feat/0002-phase-2`
 
 ## feat(attachments): add uploads with storage, type sniffing and office text extraction
-- [ ] `Storage` interface + `LocalDiskStorage` (`STORAGE_DIR`), env + `.env.example`
-- [ ] `attachments` table + migration
-- [ ] magic-byte sniffing; office (docx/xlsx/pptx) and plain-text extraction with fflate, size limits, truncation
-- [ ] `POST /api/uploads` (multipart), `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` (unlinked only)
-- [ ] daily pg-boss job deleting unlinked uploads older than 24h
-- [ ] tests: sniffing, extraction per format (fixtures built in-test), zip-bomb limit, upload routes and ownership
+- [x] `Storage` interface + `LocalDiskStorage` (`STORAGE_DIR`), env + `.env.example`
+- [x] `attachments` table + migration
+- [x] magic-byte sniffing; office (docx/xlsx/pptx) and plain-text extraction with fflate, size limits, truncation
+- [x] `POST /api/uploads` (multipart), `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` (unlinked only)
+- [x] daily pg-boss job deleting unlinked uploads older than 24h
+- [x] tests: sniffing, extraction per format (fixtures built in-test), zip-bomb limit, upload routes and ownership
 
 ## feat(chat): send attachments and web search options with messages
 - [ ] `post-message` accepts `attachmentIds` (owned, unlinked, allowed for the model), links them; files-only messages allowed
