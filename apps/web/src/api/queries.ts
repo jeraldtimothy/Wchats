@@ -141,3 +141,17 @@ export function usePostMessage(sessionId: string) {
     },
   });
 }
+
+export function useSetIncludeMemories(sessionId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (includeMemories: boolean) =>
+      api<SessionDetail>(`/api/chat/v2/session/${sessionId}`, { method: 'PATCH', json: { includeMemories } }),
+    onMutate: (includeMemories) => {
+      qc.setQueryData<SessionDetail>(qk.session(sessionId), (d) =>
+        d ? { ...d, session: { ...d.session, includeMemories } } : d,
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: qk.session(sessionId) }),
+  });
+}

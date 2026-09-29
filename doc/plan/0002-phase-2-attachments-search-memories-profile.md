@@ -29,9 +29,9 @@ Branch: `feat/0002-phase-2`
 - [x] tests
 
 ## feat(web): add attachments, tools, memories toggle and sources to chat
-- [ ] composer: paperclip + drag-and-drop with type gating, upload chips with remove, files-only send
-- [ ] composer bar: Include Memories toggle (PATCH), Tools popover (Web Search; Allow multiple turns + hint when supported)
-- [ ] messages: attachment chips/thumbnails; web sources as numbered chips; search activity line
+- [x] composer: paperclip + drag-and-drop with type gating, upload chips with remove, files-only send
+- [x] composer bar: Include Memories toggle (PATCH), Tools popover (Web Search; Allow multiple turns + hint when supported)
+- [x] messages: attachment chips/thumbnails; web sources as numbered chips; search activity line
 
 ## feat(web): add profile page
 - [ ] cards: User Profile, Global System Prompt, Memory Items (add/edit/delete, empty state), Generate AI Memories, Default App, Billing Accounts
