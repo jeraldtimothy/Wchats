@@ -53,9 +53,9 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] sidebar (APPS / ACCOUNT / SESSIONS with rename + delete-confirm), role-based nav, 403 page, placeholder Ask/Profile/IAM pages, mobile collapse
 
 ## feat(web): add model picker with cards and compact views
-- [ ] modal "Select a Model", billing account dropdown + helper text
-- [ ] cards grouped by provider with tier pills; compact sortable table with favorite stars (favorites first)
-- [ ] selecting a model creates the session and navigates to it
+- [x] modal "Select a Model", billing account dropdown + helper text
+- [x] cards grouped by provider with tier pills; compact sortable table with favorite stars (favorites first)
+- [x] selecting a model creates the session and navigates to it
 
 ## feat(web): add streaming chat view
 - [ ] message list (user right/light-blue, assistant left/grey), sanitized Markdown + highlight.js + code copy, message copy + toast, scroll-to-bottom

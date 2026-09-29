@@ -6,6 +6,7 @@ import { useMe } from '../api/queries';
 import { MeContext } from '../lib/me';
 import { PickerContext } from '../lib/picker';
 import { Mascot } from './Logo';
+import { ModelPicker } from './ModelPicker';
 import { Sidebar } from './Sidebar';
 
 export function FullScreenMessage({ children }: { children: React.ReactNode }) {
@@ -68,13 +69,9 @@ export function AppLayout() {
             <Outlet />
           </main>
         </div>
-        <PickerSlot open={pickerOpen} onClose={() => setPickerOpen(false)} />
+        <ModelPicker open={pickerOpen} onClose={() => setPickerOpen(false)} />
       </PickerContext.Provider>
     </MeContext.Provider>
   );
 }
 
-/** Filled in by the model picker. */
-function PickerSlot(_props: { open: boolean; onClose: () => void }) {
-  return null;
-}
