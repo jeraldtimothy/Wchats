@@ -1,0 +1,36 @@
+{
+  "name": "@wchats/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx seed/seed.ts",
+    "check-models": "tsx src/models/check-models.ts"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@fastify/cookie": "^11.1.2",
+    "@google/genai": "^2.24.0",
+    "@wchats/shared": "workspace:*",
+    "better-auth": "^1.7.6",
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^5.12.5",
+    "openai": "^7.23.0",
+    "pg": "^8.23.0",
+    "pg-boss": "^12.35.0",
+    "zod": "^4.6.5"
+  }
+}

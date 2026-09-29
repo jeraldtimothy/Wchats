@@ -128,7 +128,11 @@ When asked to **sync docs** outside a rendezvous, audit `doc/wiki/` against the 
 
 The commands that define "the codebase is workable." Rendezvous and Quick-lane commits must pass all of them.
 
-_None yet. Add the build, test, and lint commands here once the stack is chosen._
+```sh
+pnpm check   # = pnpm typecheck && pnpm lint && pnpm test && pnpm build
+```
+
+`pnpm test` runs API integration tests against `TEST_DATABASE_URL` (created and migrated automatically), so PostgreSQL must be running. See [doc/wiki/getting-started.md](doc/wiki/getting-started.md).
 
 ## Commits
 

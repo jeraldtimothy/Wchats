@@ -5,11 +5,11 @@ Design: [ARCHITECTURE.md](../../ARCHITECTURE.md)
 Branch: `feat/0001-phase-1-foundation`
 
 ## build: scaffold pnpm monorepo with health check
-- [ ] root `package.json` (engines node >=22, scripts: dev, typecheck, lint, test, build, check, db:*, seed, check-models), `pnpm-workspace.yaml`, `tsconfig.base.json`, ESLint flat config, `.gitignore`, `.nvmrc`
-- [ ] `packages/shared` (Zod, exports TS source), `apps/api` (Fastify hello), `apps/web` (Vite React hello)
-- [ ] `docker-compose.yml` (postgres:16), `.env.example`
-- [ ] Vitest wired in `apps/api` with one smoke test
-- [ ] CLAUDE.md health check: `pnpm check`
+- [x] root `package.json` (engines node >=22, scripts: dev, typecheck, lint, test, build, check, db:*, seed, check-models), `pnpm-workspace.yaml`, `tsconfig.base.json`, ESLint flat config, `.gitignore`, `.nvmrc`
+- [x] `packages/shared` (Zod, exports TS source), `apps/api` (Fastify hello), `apps/web` (Vite React hello)
+- [x] `docker-compose.yml` (postgres:16), `.env.example`
+- [x] Vitest wired in `apps/api` with one smoke test
+- [x] CLAUDE.md health check: `pnpm check`
 
 ## feat(db): add Drizzle schema and initial migration
 - [ ] `apps/api/src/db/schema.ts`: Better Auth tables, profiles, models, model_favorites, billing_accounts, billing_account_members, ledger_entries, chat_sessions, messages
