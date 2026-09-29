@@ -4,19 +4,19 @@ Code: `apps/api/src/chat/` (`runner.ts`, `hub.ts`, `sessions.ts`, `titles.ts`, `
 
 ## post-message
 
-`POST /api/chat/v2/session/:id/post-message` with `{text, effort?, webSearch?, multiTurn?}`:
+`POST /api/chat/v2/session/:id/post-message` with `{text, effort?, webSearch?, multiTurn?, attachmentIds?}`:
 
-1. The session must be owned and not deleted. A retired model returns 409 `model_retired`; an unconfigured provider returns 409 `model_unavailable`. Attachments return 400 for now.
+1. The session must be owned and not deleted. A retired model returns 409 `model_retired`; an unconfigured provider returns 409 `model_unavailable`. Attachments must be the user's own unsent uploads that the model can read ([attachments](attachments.md)); text may be empty when files are attached.
 2. `effort` must be one of the model's `reasoning_efforts`. The default is `default_effort`; models without efforts get none.
 3. Balance gate (`assertCanSpend`): 402 `insufficient_credit`, 403 `billing_account_disabled`, or 403 when the user isn't a member.
-4. In one transaction holding a `FOR UPDATE` lock on the session row: 409 `busy` if a reply is pending or streaming; otherwise insert the user message (`complete`, with `options`) and the assistant message (`pending`, 1 ms later).
+4. In one transaction holding a `FOR UPDATE` lock on the session row: 409 `busy` if a reply is pending or streaming; otherwise insert the user message (`complete`, with `options` `{effort, webSearch, multiTurn}`, each tool kept only if the model supports it), link the attachments, and insert the assistant message (`pending`, 1 ms later).
 5. `GenerationRunner.start()`, then respond 202 `{userMessage, assistantMessage}`.
 
 ## GenerationRunner
 
 This is a server-side job detached from the request. It:
 
-- builds the request: system prompt (base + Global System Prompt + date), history (refused or failed exchanges are dropped), effort and budgets, web search and multi-turn only if the model allows them;
+- builds the request: system prompt (base + Global System Prompt + memories if Include Memories is on + date), history with each user turn's attachments as parts (refused or failed exchanges are dropped), effort and budgets, and web search / multi-turn from the user message's options;
 - sets the reply to `streaming` and publishes `message.started`;
 - forwards `text.delta`, `thinking` (once per reasoning phase; reasoning text is never sent or stored), `tool.started`, `tool.sources` and `refusal` to the hub;
 - checkpoints `content` and `sources` to the DB every 750 ms;

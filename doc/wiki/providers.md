@@ -18,7 +18,7 @@ Code: `apps/api/src/providers/`. Nothing outside this folder imports a provider 
 |---|---|---|---|
 | Call | `responses.create({stream:true, store:false})` | `messages.create({stream:true})` raw events | `models.generateContentStream` |
 | Effort | `reasoning.effort` | budget → `thinking.enabled/budget_tokens`; else adaptive + `output_config.effort`; `none` = off | budget → `thinkingBudget`; else `thinkingLevel`; `none` = budget 0 |
-| Web search | `web_search` tool | `web_search_20250305`, `max_uses` 1/5 | `googleSearch` |
+| Web search | `web_search` tool + `include: ['web_search_call.action.sources']` | `web_search_20250305`, `max_uses` 1/5 | `googleSearch` |
 | Images / PDFs | `input_image` / `input_file` data URLs | `image` / `document` base64 blocks | `inlineData` |
 | Refusal | refusal deltas, `content_filter` | `stop_reason: refusal` | SAFETY-type finish reasons, `promptFeedback.blockReason` |
 

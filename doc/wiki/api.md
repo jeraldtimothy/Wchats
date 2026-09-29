@@ -23,6 +23,9 @@ Every error is `{ "error": { "code", "message" } }` with codes from `packages/sh
 | `GET /api/billing-accounts` | user | accounts the user belongs to |
 | `GET /api/models` | user | picker catalog (non-retired, provider configured, `isFavorite`); no ids or prices exposed |
 | `PUT/DELETE /api/models/:id/favorite` | user | 204 |
+| `GET/PATCH /api/profile` | user | see [profile and memories](profile-and-memories.md) |
+| `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id` | user | memory items |
+| `POST /api/uploads`, `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` | user | see [attachments](attachments.md) |
 | `GET/POST /api/chat/v2/sessions` | chat | list / create (`{modelId, billingAccountId}`) |
 | `GET/PATCH/DELETE /api/chat/v2/session/:id` | chat | detail / rename or `includeMemories` / soft delete |
 | `POST /api/chat/v2/session/:id/post-message` | chat | 202; see [chat streaming](chat-streaming.md) |

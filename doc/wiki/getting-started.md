@@ -10,12 +10,14 @@
 ```sh
 pnpm install
 cp .env.example .env        # then set BETTER_AUTH_SECRET and any provider keys
-pnpm db:migrate             # creates the database if needed and applies migrations
+pnpm db:migrate             # creates the database if needed and applies migrations (run again after pulling)
 pnpm seed                   # models, users, accounts, starting credit (safe to re-run)
 pnpm dev                    # API on :3000, web on :5173 (open http://localhost:5173)
 ```
 
 A provider's models only appear once its key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`) is set. Without any key the app runs, but the picker says no models are available.
+
+Uploads are stored under `apps/api/storage` (gitignored) unless `STORAGE_DIR` is set.
 
 ## Seed accounts (development only)
 

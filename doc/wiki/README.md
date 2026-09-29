@@ -9,8 +9,10 @@ The living manual of the codebase. Every page here describes the code as it is o
 - [Chat streaming](chat-streaming.md): post-message, GenerationRunner, event hub, listen SSE, titles
 - [Providers](providers.md): the LLMProvider interface and the three adapters
 - [Billing](billing.md): prices, cost math, the ledger and the balance gate
+- [Attachments](attachments.md): uploads, type checks, office text extraction, storage
+- [Profile and memories](profile-and-memories.md): profile API, memory items, system prompt assembly
 - [Web app](web.md): routes, layout, picker, chat view, theme
 
 ## Status
 
-Phase 1 is built. Phases 2–4 (attachments, web search UI, memories, profile, IAM, Ask, agent mode) are not built yet; see [plan 0001](../plan/0001-phase-1-foundation.md) and ARCHITECTURE.md.
+Phases 1 and 2 are built. Phases 3–4 (IAM and Billing, Ask, AI memory generation, agent mode, polish) are not; see ARCHITECTURE.md.

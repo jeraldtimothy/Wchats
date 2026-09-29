@@ -38,8 +38,9 @@ Branch: `feat/0002-phase-2`
 - [x] post-login landing honours the default app (SimGen → external URL)
 
 ## Wiki
-- [ ] update api, chat-streaming, providers, web, getting-started; add attachments and profile pages
+- [x] update api, chat-streaming, providers, web, getting-started; add attachments and profile pages
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] smoke: upload a docx and an image through the dev proxy against the mock provider; request contains the parts
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] smoke: upload a docx and an image through the dev proxy against the mock provider; request contains the parts
+  - Note: a files-only send with Web Search reached the mock as extracted docx text + `input_image` + the placeholder prompt, with the `web_search` tool and `include`; mock sources were persisted. The browser UI was not checked visually (Chrome extension can't reach localhost).
