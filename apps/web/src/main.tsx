@@ -7,12 +7,13 @@ import { AppLayout } from './components/AppLayout';
 import { ToastProvider } from './components/Toast';
 import 'highlight.js/styles/github.css';
 import './index.css';
+import { AskPage } from './routes/AskPage';
 import { ChatHome } from './routes/ChatHome';
 import { ChatSessionPage } from './routes/ChatSessionPage';
 import { NotFoundPage } from './routes/ForbiddenPage';
 import { DefaultAppRedirect, RequireFrontend, RequireManager } from './routes/guards';
+import { IamPage } from './routes/iam/IamPage';
 import { LoginPage } from './routes/LoginPage';
-import { PlaceholderPage } from './routes/PlaceholderPage';
 import { ProfilePage } from './routes/ProfilePage';
 
 const queryClient = new QueryClient({
@@ -46,9 +47,7 @@ const router = createBrowserRouter([
         path: 'ask',
         element: (
           <RequireFrontend app="ask">
-            <PlaceholderPage title="Ask" phase={3}>
-              Quick one-shot questions to any model, billed the same way as chat.
-            </PlaceholderPage>
+            <AskPage />
           </RequireFrontend>
         ),
       },
@@ -57,9 +56,7 @@ const router = createBrowserRouter([
         path: 'iam',
         element: (
           <RequireManager>
-            <PlaceholderPage title="IAM and Billing" phase={3}>
-              Manage users, billing accounts, credit and the model catalog.
-            </PlaceholderPage>
+            <IamPage />
           </RequireManager>
         ),
       },

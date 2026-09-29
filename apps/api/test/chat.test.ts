@@ -184,6 +184,9 @@ describe('post-message → generation → billing', () => {
     expect(entries.map((e) => e.kind).sort()).toEqual(['credit_grant', 'usage_charge', 'usage_charge']);
     expect(entries.find((e) => e.messageId === reply.id)!.amountNanoUsd).toBe(-expected);
     expect(entries.find((e) => e.kind === 'usage_charge' && e.messageId === null)!.reason).toContain('Session title');
+    // Every usage charge records its model, so usage can be reported per model.
+    expect(entries.find((e) => e.messageId === reply.id)!.modelId).toBe(model.id);
+    expect(entries.find((e) => e.kind === 'usage_charge' && e.messageId === null)!.modelId).not.toBeNull();
     const account = await personalAccount(u.id);
     expect(account.balanceNanoUsd).toBe(await ledgerSum(db, u.accountId));
   });

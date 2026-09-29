@@ -22,6 +22,27 @@
       "when": 1790661464214,
       "tag": "0002_memory_items",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790661987278,
+      "tag": "0003_ledger_model",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790662063350,
+      "tag": "0004_session_kind",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790662437332,
+      "tag": "0005_model_edited_at",
+      "breakpoints": true
     }
   ]
 }

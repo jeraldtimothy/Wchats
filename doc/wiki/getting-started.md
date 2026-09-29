@@ -37,12 +37,13 @@ Both are members of the shared account "Acme Research" ($100).
 | `pnpm test` | API tests (Vitest); recreates `TEST_DATABASE_URL` each run |
 | `pnpm db:generate` | new migration from `apps/api/src/db/schema.ts` |
 | `pnpm db:migrate` | apply migrations to `DATABASE_URL` |
-| `pnpm seed` | upsert models from `apps/api/seed/models.config.ts`, users, accounts, credit |
+| `pnpm seed` | upsert models from `apps/api/seed/models.config.ts` (skipping models edited in IAM), users, accounts, credit |
+| `pnpm seed --force-models` | the same, but the config overwrites IAM edits |
 | `pnpm check-models` | list each configured provider's models and mark which seeded ids exist |
 
 ## Model ids and prices
 
-`apps/api/seed/models.config.ts` holds every provider model id, price and thinking budget, each marked `PLACEHOLDER`. Fill in real values, run `pnpm check-models`, then `pnpm seed`. A re-seed overwrites catalog fields from the config.
+`apps/api/seed/models.config.ts` holds every provider model id, price and thinking budget, each marked `PLACEHOLDER`. Fill in real values, run `pnpm check-models`, then `pnpm seed`. A re-seed updates catalog fields from the config for every model **not** edited in IAM → Models. Edited models are listed and left alone unless you pass `--force-models`. Managers can also change ids and prices directly in IAM.
 
 ## Layout
 

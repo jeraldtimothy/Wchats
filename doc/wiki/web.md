@@ -12,9 +12,12 @@ Code: `apps/web/src`. React 19 + Vite, React Router (library mode), TanStack Que
 | `/chat` | `ChatHome` (dashed "+" tile: "Start a New Conversation") | chat |
 | `/chat/:sessionId` | `ChatSessionPage` | chat |
 | `/profile` | `ProfilePage` ([profile and memories](profile-and-memories.md)) | |
-| `/ask`, `/iam` | `PlaceholderPage` (phase 3) | ask / manager |
+| `/ask` | `AskPage` ([Ask](ask.md)) | ask |
+| `/iam?tab=users\|billing\|models` | `routes/iam/IamPage` ([IAM and Billing](iam.md)) | manager |
 
 Guards (`routes/guards.tsx`) render the 403 page when access is missing; the API enforces the same rules.
+
+Data hooks live in `api/queries.ts` (app) and `api/iam.ts` (manager console). `useSessionStream(sessionId, {url, detailKey, onTerminal})` serves both chat and Ask. `lib/format.ts` has `formatNanoUsd` (4 decimals below a cent) and UTC date helpers.
 
 ## Layout
 

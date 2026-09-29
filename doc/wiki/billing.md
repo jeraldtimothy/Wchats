@@ -19,7 +19,9 @@ All the arithmetic is integer (pico-USD internally), rounded up to the next nano
 
 - `appendEntry(tx, …)` runs `UPDATE billing_accounts SET balance = balance + amount RETURNING` (taking the row lock), then inserts the entry with `balance_after_nano_usd`. Code never updates or deletes entries.
 - `grantCredit(db, {accountId, amountNano, kind?, reason, createdBy?, source?, externalRef?})` handles credit grants (> 0), adjustments and refunds. A reason is required. It's idempotent on `externalRef`, which is the seam for Stripe top-ups (`source: 'stripe'`, `externalRef` = payment id).
-- `chargeUsage(tx, …)` records a `usage_charge` (negative) linked to the message. It's called inside the transaction that finalizes the reply.
+- `chargeUsage(tx, …)` records a `usage_charge` (negative) linked to the message and its `model_id`. It's called inside the transaction that finalizes the reply. Title charges set `model_id` too, which is what makes per-model usage reports possible.
+- Managers grant or adjust credit from IAM (`created_by` = the manager, `source: 'manual'`); see [IAM and Billing](iam.md).
+- `money.ts`: `nanoToCents`, `usdToNano` / `signedUsdToNano`, and `nanoToUsd` (exact 9-decimal string, used in CSVs).
 - `ledgerSum` recomputes the sum; tests assert it equals the cached balance, including under concurrent charges.
 
 ## Gate (`assertCanSpend`)
@@ -28,8 +30,8 @@ Sending requires that the user is a member (else 403), the account isn't disable
 
 ## What gets charged
 
-Every assistant reply with reported usage (including provider errors that report usage), and every auto-title call (reason `Session title (<model>)`, no message link).
+Every assistant reply with reported usage (chat and Ask, including provider errors that report usage), and every auto-title call (reason `Session title (<model>)`, no message link).
 
 ## Accounts
 
-Each user gets a personal account `[Personal] NAME` on sign-up (`SIGNUP_CREDIT_USD`, default 0). Shared accounts and memberships live in `billing_accounts` / `billing_account_members`; managing them from the UI comes in phase 3.
+Each user gets a personal account `[Personal] NAME` on sign-up (`SIGNUP_CREDIT_USD`, default 0). Shared accounts and memberships live in `billing_accounts` / `billing_account_members`, and managers administer them in [IAM and Billing](iam.md).
