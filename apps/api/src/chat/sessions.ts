@@ -7,6 +7,7 @@ import { notFound } from '../http/errors.js';
 import { toModelSummary } from '../models/catalog.js';
 
 export type SessionRow = typeof chatSessions.$inferSelect;
+export type SessionKind = SessionRow['kind'];
 export type MessageRow = typeof messages.$inferSelect;
 
 export function toMessageDto(m: MessageRow, files: AttachmentRow[] = []): MessageDto {
@@ -42,20 +43,36 @@ function toSummary(s: SessionRow, model: typeof models.$inferSelect): SessionSum
   };
 }
 
-export async function listSessions(db: DbOrTx, userId: string): Promise<SessionSummary[]> {
+export async function listSessions(db: DbOrTx, userId: string, kind: SessionKind = 'chat'): Promise<SessionSummary[]> {
   const rows = await db
     .select({ s: chatSessions, m: models })
     .from(chatSessions)
     .innerJoin(models, eq(models.id, chatSessions.modelId))
-    .where(and(eq(chatSessions.userId, userId), isNull(chatSessions.deletedAt)))
+    .where(and(eq(chatSessions.userId, userId), eq(chatSessions.kind, kind), isNull(chatSessions.deletedAt)))
     .orderBy(desc(chatSessions.lastActivityAt));
   return rows.map((r) => toSummary(r.s, r.m));
 }
 
+export async function getSessionSummary(db: DbOrTx, session: SessionRow): Promise<SessionSummary> {
+  const model = await db.query.models.findFirst({ where: eq(models.id, session.modelId) });
+  if (!model) throw notFound('Model');
+  return toSummary(session, model);
+}
+
 /** The session if it exists, belongs to the user and isn't deleted; otherwise 404. */
-export async function getOwnedSession(db: DbOrTx, userId: string, sessionId: string): Promise<SessionRow> {
+export async function getOwnedSession(
+  db: DbOrTx,
+  userId: string,
+  sessionId: string,
+  kind: SessionKind = 'chat',
+): Promise<SessionRow> {
   const s = await db.query.chatSessions.findFirst({
-    where: and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId), isNull(chatSessions.deletedAt)),
+    where: and(
+      eq(chatSessions.id, sessionId),
+      eq(chatSessions.userId, userId),
+      eq(chatSessions.kind, kind),
+      isNull(chatSessions.deletedAt),
+    ),
   });
   if (!s) throw notFound('Chat session');
   return s;
@@ -70,8 +87,13 @@ export async function listMessages(db: DbOrTx, sessionId: string): Promise<Messa
     .orderBy(asc(messages.createdAt), asc(messages.role));
 }
 
-export async function getSessionDetail(db: DbOrTx, userId: string, sessionId: string): Promise<SessionDetail> {
-  const s = await getOwnedSession(db, userId, sessionId);
+export async function getSessionDetail(
+  db: DbOrTx,
+  userId: string,
+  sessionId: string,
+  kind: SessionKind = 'chat',
+): Promise<SessionDetail> {
+  const s = await getOwnedSession(db, userId, sessionId, kind);
   const [row] = await db
     .select({ m: models, account: billingAccounts, fav: modelFavorites.createdAt })
     .from(models)

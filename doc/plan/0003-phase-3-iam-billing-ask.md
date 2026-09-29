@@ -9,9 +9,9 @@ Branch: `feat/0003-phase-3`
 - [x] test
 
 ## feat(ask): add Ask as one-shot hidden sessions
-- [ ] `chat_sessions.kind` (`chat` | `ask`) + migration; chat lists and routes only see `chat`
-- [ ] `POST /api/ask` (model, account, text, effort, webSearch) → session + reply via the runner; `GET /api/ask/history`, `GET /api/ask/:id`, `GET /api/ask/:id/listen`, `DELETE /api/ask/:id`; `ask` frontend guard
-- [ ] tests
+- [x] `chat_sessions.kind` (`chat` | `ask`) + migration; chat lists and routes only see `chat`
+- [x] `POST /api/ask` (model, account, text, effort, webSearch) → session + reply via the runner; `GET /api/ask/history`, `GET /api/ask/:id`, `GET /api/ask/:id/listen`, `DELETE /api/ask/:id`; `ask` frontend guard
+- [x] tests
 
 ## feat(iam): add user management API
 - [ ] `GET /api/iam/users` (search, paging), `PATCH /api/iam/users/:id` (disabled, frontends, manager) with self-lockout guards; disabling revokes sessions

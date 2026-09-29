@@ -275,7 +275,8 @@ export class GenerationRunner {
     }
 
     const answered = status === 'complete' || status === 'truncated';
-    if (answered && session.title === null) {
+    // Ask sessions show their question instead of a title.
+    if (answered && session.title === null && session.kind === 'chat') {
       await this.deps.titles.enqueue(session.id).catch((err: unknown) => this.deps.log?.error(err, 'title enqueue failed'));
     }
   }

@@ -194,10 +194,14 @@ export const billingAccountMembers = pgTable(
 // Chat
 // ---------------------------------------------------------------------------
 
+export const sessionKindEnum = pgEnum('session_kind', ['chat', 'ask']);
+
 export const chatSessions = pgTable(
   'chat_sessions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
+    /** 'ask' sessions are one-shot Ask questions; they never appear in the chat sidebar. */
+    kind: sessionKindEnum('kind').notNull().default('chat'),
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
@@ -213,7 +217,7 @@ export const chatSessions = pgTable(
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
-  (t) => [index('chat_sessions_user_activity_idx').on(t.userId, t.lastActivityAt)],
+  (t) => [index('chat_sessions_user_activity_idx').on(t.userId, t.kind, t.lastActivityAt)],
 );
 
 export const messageRoleEnum = pgEnum('message_role', ['user', 'assistant']);
