@@ -64,8 +64,9 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] retired-model read-only banner; empty state tile
 
 ## Wiki
-- [ ] `doc/wiki/README.md` index + pages: getting-started, api, chat-streaming, providers, billing, web
+- [x] `doc/wiki/README.md` index + pages: getting-started, api, chat-streaming, providers, billing, web
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] manual smoke: seed, log in, pick a model, stream a reply (or a clean "provider not configured" path without keys), balance decreases
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] manual smoke: seed, log in, pick a model, stream a reply (or a clean "provider not configured" path without keys), balance decreases
+  - Note: run over HTTP through the Vite proxy against a local mock of the OpenAI Responses API (real adapter + SDK). Deltas streamed unbuffered, the reply was charged exactly per the formula, and the title arrived live. The browser UI was not checked visually: the Chrome extension could not reach this machine's localhost.

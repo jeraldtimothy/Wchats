@@ -148,6 +148,7 @@ Request and response bodies are Zod schemas in `packages/shared`.
 |---|---|---|
 | `* /api/auth/*` | P1 | Better Auth (sign-up/in/out, Google OAuth callback, session) |
 | `GET /api/health` | P1 | liveness + DB check |
+| `GET /api/config` | P1 | public config for the login page (`googleAuthEnabled`) |
 | `GET /api/me` | P1 | user, profile, billing accounts (with `balanceCents`) |
 | `GET /api/models` | P1 | picker catalog: non-retired, provider configured, `isFavorite` per row |
 | `PUT / DELETE /api/models/:id/favorite` | P1 | toggle favorite |
@@ -169,7 +170,7 @@ Request and response bodies are Zod schemas in `packages/shared`.
 1. Load the session. It must be owned by the user, not deleted, and its model must not be retired (409 `model_retired`).
 2. **Balance gate**: the account must be active, the user must be a member, and `balance_nano_usd > 0`. Otherwise respond 402 `insufficient_credit` (or 403 `account_disabled`).
 3. Reject if a reply is already `streaming` in this session (409 `busy`).
-4. In one transaction, insert the user message (`complete`) and the assistant message (`pending`), then bump `last_activity_at`.
+4. In one transaction that holds a `FOR UPDATE` lock on the session row (so concurrent sends serialize), insert the user message (`complete`) and the assistant message (`pending`) with explicit timestamps (the reply's is 1 ms later, which keeps the pair ordered), then bump `last_activity_at`.
 5. Hand the assistant message id to `GenerationRunner.start()` without awaiting it, and return 202.
 
 ## 5. Streaming: GenerationRunner, ChatEventHub, SSE
@@ -206,7 +207,7 @@ data: <JSON>
 | `done` | `{messageId, seq, status, stopReason, usage, costNanoUsd, balanceCents}` | terminal |
 | `session.updated` | `{sessionId, title}` | auto-title landed; the sidebar updates live |
 
-The server sends `: ping` every 15 s. The client uses `EventSource` (cookies are sent same-origin) and reconnects automatically. On every `snapshot` it replaces the in-flight bubble's content, so a reconnect restores the partial reply and then continues with live deltas. Once a message is terminal, the client refetches the session to pick up the persisted row.
+The stream opens with `retry: 2000`, and the server sends `: ping` every 15 s. The client uses `EventSource` (cookies are sent same-origin) and reconnects automatically. On every `snapshot` it replaces the in-flight bubble's content, so a reconnect restores the partial reply and then continues with live deltas. Once a message is terminal, the client refetches the session to pick up the persisted row.
 
 ## 6. Provider layer
 
@@ -265,12 +266,12 @@ interface LLMProvider {
 | | OpenAI | Anthropic | Google Gemini |
 |---|---|---|---|
 | SDK call | `responses.create({stream:true})` | `messages.stream()` | `models.generateContentStream()` |
-| Effort | `reasoning: {effort}` (`none` sent as `none` when allowed, else omitted) | `thinking: {type:'enabled', budget_tokens: budgets[effort]}`; `none` = omitted | `thinkingConfig: {thinkingBudget: budgets[effort] ?? preset}`; `none` = `0` where the model allows |
-| Web search (P2) | built-in `web_search` tool; `url_citation` annotations → sources | server tool `web_search`; `web_search_tool_result` blocks + citations → sources | `googleSearch` tool; `groundingMetadata.groundingChunks` → sources |
-| Multi-turn tools | `max_tool_calls` 1 vs unset | `max_uses` 1 vs 5 | n/a (grounding is single-shot) |
+| Effort | `reasoning: {effort}`; omitted for models without efforts | `none` = no thinking; a configured budget → `thinking: {type:'enabled', budget_tokens}` (max_tokens grows by the budget); no budget → `thinking: {type:'adaptive'}` + `output_config.effort` | `none` = `thinkingBudget: 0`; a configured budget → `thinkingBudget`; no budget → `thinkingLevel` (LOW/MEDIUM/HIGH) |
+| Web search (P2) | built-in `web_search` tool; `web_search_call` action sources + `url_citation` annotations → sources; searches = completed `web_search_call` items | server tool `web_search_20250305`; `web_search_tool_result` blocks + citations → sources | `googleSearch` tool; `groundingMetadata.groundingChunks` → sources; searches = distinct `webSearchQueries` |
+| Multi-turn tools | not applied: the SDK's create params expose no `max_tool_calls` (D14) | `max_uses` 1 vs 5 | n/a (grounding is single-shot) |
 | Images / PDFs (P2) | `input_image` / `input_file` parts | `image` / `document` blocks | `inlineData` parts |
 | Refusal | `refusal` content / `content_filter` | `stop_reason: refusal` | `finishReason: SAFETY`, `blockReason` |
-| Usage mapping | input = `input_tokens − cached_tokens`; output = `output_tokens − reasoning_tokens` | input = `input_tokens + cache_creation_input_tokens`; cached = `cache_read_input_tokens`; reasoning = 0 (thinking is inside `output_tokens`); searches = `server_tool_use.web_search_requests` | input = `promptTokenCount − cachedContentTokenCount`; output = `candidatesTokenCount`; reasoning = `thoughtsTokenCount` |
+| Usage mapping | input = `input_tokens − cached_tokens`; output = `output_tokens − reasoning_tokens` | input = `input_tokens + cache_creation_input_tokens`; cached = `cache_read_input_tokens`; output = `output_tokens − output_tokens_details.thinking_tokens`; reasoning = `thinking_tokens`; searches = `server_tool_use.web_search_requests` | input = `promptTokenCount − cachedContentTokenCount + toolUsePromptTokenCount`; output = `candidatesTokenCount`; reasoning = `thoughtsTokenCount` |
 
 The `(output + reasoning) × output price` formula is correct for all three mappings above. Office files (docx/xlsx/pptx) are converted to text server-side (P2) before any adapter sees them. When a provider's key is missing, `isConfigured()` is false, its models are filtered out of `/api/models`, and new sessions can't be created for them. The app keeps running.
 
@@ -343,3 +344,7 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 | D11 | New sign-ups get a personal account with `SIGNUP_CREDIT_USD` (default 0) | There's no payment processor yet, so managers grant credit. |
 | D12 | ESLint + typescript-eslint for lint | The health check needs lint and the spec doesn't name a linter. |
 | D13 | Server-side retired-model enforcement and the read-only banner ship in P1 | Correctness (no sends to retired ids). Polish stays in P4. |
+| D14 | "Allow multiple turns" isn't applied for OpenAI | openai@7 `responses.create` params have no `max_tool_calls`. Anthropic uses `max_uses`. Revisit when the SDK exposes the limit. |
+| D15 | Effort falls back to the provider's native control when a model has no configured budget (Anthropic adaptive thinking + `output_config.effort`; Gemini `thinkingLevel`) | Newer Claude and Gemini models favour these over fixed budgets. Budgets in the seed config still win when set. |
+| D16 | `buildApp` runs title jobs in-process by default; `main.ts` swaps in the pg-boss queue | Tests and scripts don't need a pg-boss worker. Production titles stay durable, with retries. |
+| D17 | A refused or failed exchange is left out of later requests' history | Matches "Rephrase it before continuing": the declined prompt isn't replayed to the provider. |
