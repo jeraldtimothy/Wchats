@@ -20,6 +20,9 @@ const app = await buildApp({ logger: true, providers, hub, titles, storage });
 
 if (orphans > 0) app.log.warn(`Marked ${orphans} interrupted repl${orphans === 1 ? 'y' : 'ies'} as failed.`);
 const configured = providers.configured();
+if (env.LLM_SIMULATION) {
+  app.log.warn('LLM_SIMULATION is on: every model is answered by the built-in simulator; no provider APIs are called.');
+}
 app.log.info(`LLM providers configured: ${configured.length ? configured.join(', ') : 'none (set API keys in .env)'}`);
 
 await app.listen({ port: env.PORT, host: '127.0.0.1' });

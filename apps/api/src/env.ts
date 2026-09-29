@@ -38,6 +38,11 @@ const EnvSchema = z.object({
     .default('0'),
   /** Local upload storage (relative paths resolve from apps/api). */
   STORAGE_DIR: optional.transform((v) => resolve(apiRoot, v ?? 'storage')),
+  /** Dev/demo only: answer with a built-in simulated provider instead of calling real APIs. */
+  LLM_SIMULATION: z
+    .string()
+    .optional()
+    .transform((v) => ['1', 'true', 'yes', 'on'].includes((v ?? '').trim().toLowerCase())),
   SIMGEN_URL: z.string().default('https://example.com/simgen'),
   LOG_LEVEL: z.string().default('info'),
 });

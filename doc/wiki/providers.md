@@ -24,6 +24,19 @@ Code: `apps/api/src/providers/`. Nothing outside this folder imports a provider 
 
 The usage normalization for each provider is in ARCHITECTURE.md §6. `util.ts` has `mergeTurns` (merges consecutive same-role turns), `SourceSet` (de-duplicates URLs) and `safeErrorMessage` (generic texts for 401/403/429/404/5xx and for invalid-key errors reported with other statuses, such as Google's 400 `API_KEY_INVALID`; unwraps JSON error bodies to their message; redacts anything that looks like a key).
 
+## Simulation mode (`simulated.ts`)
+
+With `LLM_SIMULATION=1` in `.env`, `createProvidersFromEnv` backs all three providers with `SimulatedProvider`. Keys are ignored and no network calls are made; everything downstream (streaming, reconnect, titles, sources, billing, memories) runs normally. It's for development and demos, and is off by default. The API logs a warning at startup, `/api/me` returns `config.simulation: true`, the sidebar and model picker show a notice, and `pnpm check-models` skips its checks.
+
+What it produces:
+- A streamed Markdown reply naming the provider and model id: a list, a table of the request settings, and a code block.
+- A "Thinking…" indicator, with reasoning tokens billed by effort (none 0, low 120, medium 360, high 900, extra high 1600).
+- For web search: `tool.started` with a query plus two `example.com`/`example.org` placeholder sources (twice with Allow multiple turns).
+- An acknowledgement of each attachment.
+- Usage estimated from text (about 4 characters per token, plus 800 tokens per image and 1500 per PDF), so charges hit the ledger at the seeded prices.
+- Title prompts get the first words of the question; memory-job prompts get JSON built from "I prefer / I like / I am / Remember …" lines.
+- Put `[simulate refusal]`, `[simulate truncation]` or `[simulate error]` in a message to see those inline states.
+
 ## Tests
 
 `apps/api/test/providers/*.test.ts` run each adapter against a mocked SDK client (request mapping, event normalization, stop reasons, usage, key redaction).

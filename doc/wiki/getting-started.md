@@ -17,6 +17,8 @@ pnpm dev                    # API on :3000, web on :5173 (open http://localhost:
 
 A provider's models only appear once its key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`) is set. Without any key the app runs, but the picker says no models are available.
 
+**No real keys yet?** Set `LLM_SIMULATION=1` in `.env` and every model is answered by a built-in simulator; see [providers → simulation mode](providers.md#simulation-mode-simulatedts). Charges are recorded against simulated usage. Set it back to `0` once real keys are in.
+
 Uploads are stored under `apps/api/storage` (gitignored) unless `STORAGE_DIR` is set.
 
 ## Seed accounts (development only)

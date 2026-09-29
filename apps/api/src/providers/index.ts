@@ -3,6 +3,7 @@ import { env } from '../env.js';
 import { AnthropicProvider } from './anthropic.js';
 import { GeminiProvider } from './gemini.js';
 import { OpenAIProvider } from './openai.js';
+import { SimulatedProvider } from './simulated.js';
 import type { LLMProvider } from './types.js';
 
 export type * from './types.js';
@@ -22,8 +23,18 @@ export function createRegistry(providers: Record<Provider, LLMProvider>): Provid
   };
 }
 
-/** Builds adapters from env. A provider without a key stays unconfigured; nothing throws. */
+/**
+ * Builds adapters from env. A provider without a key stays unconfigured;
+ * nothing throws. With LLM_SIMULATION on, every provider is simulated.
+ */
 export function createProvidersFromEnv(): ProviderRegistry {
+  if (env.LLM_SIMULATION) {
+    return createRegistry({
+      openai: new SimulatedProvider('openai'),
+      anthropic: new SimulatedProvider('anthropic'),
+      google: new SimulatedProvider('google'),
+    });
+  }
   return createRegistry({
     openai: new OpenAIProvider({ apiKey: env.OPENAI_API_KEY, baseURL: env.OPENAI_BASE_URL }),
     anthropic: new AnthropicProvider({ apiKey: env.ANTHROPIC_API_KEY, baseURL: env.ANTHROPIC_BASE_URL }),

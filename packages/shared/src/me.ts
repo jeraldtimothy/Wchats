@@ -29,6 +29,8 @@ export const MeResponse = z.object({
   config: z.object({
     googleAuthEnabled: z.boolean(),
     simgenUrl: z.string(),
+    /** LLM_SIMULATION is on: replies come from the built-in simulator. */
+    simulation: z.boolean(),
   }),
 });
 export type MeResponse = z.infer<typeof MeResponse>;

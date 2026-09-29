@@ -5,8 +5,15 @@
 import type { Provider } from '@wchats/shared';
 import { PROVIDER_LABELS } from '@wchats/shared';
 import { seedModels } from '../../seed/models.config.js';
+import { env } from '../env.js';
 import { createProvidersFromEnv } from '../providers/index.js';
 import { safeErrorMessage } from '../providers/util.js';
+
+if (env.LLM_SIMULATION) {
+  console.log('LLM_SIMULATION is on: models are simulated, so there is nothing to check.');
+  console.log('Set LLM_SIMULATION=0 to check the seeded ids against your real provider keys.');
+  process.exit(0);
+}
 
 const registry = createProvidersFromEnv();
 let invalid = 0;
