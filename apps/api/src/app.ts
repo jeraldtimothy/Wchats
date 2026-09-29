@@ -4,10 +4,20 @@ import { authRoutes } from './auth/bridge.js';
 import { db } from './db/client.js';
 import { env } from './env.js';
 import { HttpError } from './http/errors.js';
+import { createProvidersFromEnv, type ProviderRegistry } from './providers/index.js';
 import { meRoutes } from './routes/me.js';
+import { modelRoutes } from './routes/models.js';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    providers: ProviderRegistry;
+  }
+}
 
 export interface BuildAppOptions {
   logger?: boolean;
+  /** Defaults to adapters built from env keys. Tests inject fakes. */
+  providers?: ProviderRegistry;
 }
 
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
@@ -29,6 +39,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       : false,
   });
 
+  app.decorate('providers', options.providers ?? createProvidersFromEnv());
+
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof HttpError) {
       return reply.status(error.statusCode).send({ error: { code: error.code, message: error.message } });
@@ -48,5 +60,6 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
 
   await app.register(authRoutes);
   await app.register(meRoutes);
+  await app.register(modelRoutes);
   return app;
 }

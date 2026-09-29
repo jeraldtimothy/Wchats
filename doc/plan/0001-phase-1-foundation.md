@@ -34,10 +34,10 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] a mocked-SDK unit test per adapter
 
 ## feat(models): add model catalog, seed data and favorites
-- [ ] `seed/models.config.ts` with clearly marked placeholder ids/prices/thinking settings (5 OpenAI, 3 Anthropic, 3 Google)
-- [ ] `pnpm seed`: upsert models; admin + normal user; personal + shared accounts with starting credit
-- [ ] `GET /api/models`, `PUT/DELETE /api/models/:id/favorite` + test
-- [ ] `pnpm check-models` script (moved here from the providers commit: it validates the ids in the seed config, which lands in this commit)
+- [x] `seed/models.config.ts` with clearly marked placeholder ids/prices/thinking settings (5 OpenAI, 3 Anthropic, 3 Google)
+- [x] `pnpm seed`: upsert models; admin + normal user; personal + shared accounts with starting credit
+- [x] `GET /api/models`, `PUT/DELETE /api/models/:id/favorite` + test
+- [x] `pnpm check-models` script (moved here from the providers commit: it validates the ids in the seed config, which lands in this commit)
 
 ## feat(chat): add sessions, post-message generation and listen SSE
 - [ ] sessions CRUD routes (soft delete), retired-model 409
