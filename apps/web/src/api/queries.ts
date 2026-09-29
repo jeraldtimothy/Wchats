@@ -1,5 +1,10 @@
 import type {
+  CreateMemoryBody,
   CreateSessionBody,
+  MemoryItemDto,
+  PatchMemoryBody,
+  PatchProfileBody,
+  ProfileResponse,
   MeResponse,
   ModelListResponse,
   ModelSummary,
@@ -18,6 +23,8 @@ export const qk = {
   models: ['models'] as const,
   sessions: ['sessions'] as const,
   session: (id: string) => ['session', id] as const,
+  profile: ['profile'] as const,
+  memories: ['memories'] as const,
 };
 
 export function useConfig() {
@@ -139,5 +146,66 @@ export function usePostMessage(sessionId: string) {
         return [{ ...current, lastActivityAt: userMessage.createdAt }, ...list.filter((s) => s.id !== sessionId)];
       });
     },
+  });
+}
+
+export function useSetIncludeMemories(sessionId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (includeMemories: boolean) =>
+      api<SessionDetail>(`/api/chat/v2/session/${sessionId}`, { method: 'PATCH', json: { includeMemories } }),
+    onMutate: (includeMemories) => {
+      qc.setQueryData<SessionDetail>(qk.session(sessionId), (d) =>
+        d ? { ...d, session: { ...d.session, includeMemories } } : d,
+      );
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: qk.session(sessionId) }),
+  });
+}
+
+export function useProfile() {
+  return useQuery({ queryKey: qk.profile, queryFn: () => api<ProfileResponse>('/api/profile') });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: PatchProfileBody) => api<ProfileResponse>('/api/profile', { method: 'PATCH', json: body }),
+    onSuccess: (profile) => {
+      qc.setQueryData(qk.profile, profile);
+      void qc.invalidateQueries({ queryKey: qk.me });
+    },
+  });
+}
+
+export function useMemories() {
+  return useQuery({
+    queryKey: qk.memories,
+    queryFn: () => api<{ memories: MemoryItemDto[] }>('/api/memories').then((r) => r.memories),
+  });
+}
+
+export function useCreateMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: CreateMemoryBody) => api<MemoryItemDto>('/api/memories', { method: 'POST', json: body }),
+    onSuccess: (m) => qc.setQueryData<MemoryItemDto[]>(qk.memories, (list) => [m, ...(list ?? [])]),
+  });
+}
+
+export function useUpdateMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: PatchMemoryBody & { id: string }) =>
+      api<MemoryItemDto>(`/api/memories/${id}`, { method: 'PATCH', json: body }),
+    onSuccess: (m) => qc.setQueryData<MemoryItemDto[]>(qk.memories, (list) => list?.map((x) => (x.id === m.id ? m : x))),
+  });
+}
+
+export function useDeleteMemory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/memories/${id}`, { method: 'DELETE' }),
+    onSuccess: (_d, id) => qc.setQueryData<MemoryItemDto[]>(qk.memories, (list) => list?.filter((x) => x.id !== id)),
   });
 }

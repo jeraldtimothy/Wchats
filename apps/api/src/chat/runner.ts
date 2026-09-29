@@ -1,4 +1,5 @@
-import { CHAT_ERROR_TEXT, type Effort, type Source, type TerminalStatus } from '@wchats/shared';
+import { CHAT_ERROR_TEXT, FILES_ONLY_PROMPT, type Effort, type Source, type TerminalStatus } from '@wchats/shared';
+import { listForMessages, type AttachmentRow } from '../attachments/service.js';
 import { and, eq, inArray } from 'drizzle-orm';
 import { chargeUsage } from '../billing/ledger.js';
 import { nanoToCents } from '../billing/money.js';
@@ -6,8 +7,10 @@ import { computeCost, type CostResult, type Usage } from '../billing/pricing.js'
 import type { Db } from '../db/client.js';
 import { chatSessions, messages, models, profiles } from '../db/schema.js';
 import type { ProviderRegistry } from '../providers/index.js';
-import type { ChatMessage, ChatRequest, ProviderEvent, StopReason } from '../providers/types.js';
+import type { ChatMessage, ChatRequest, ContentPart, ProviderEvent, StopReason } from '../providers/types.js';
+import type { Storage } from '../storage/index.js';
 import type { ChatEventHub } from './hub.js';
+import { memoriesForPrompt } from '../memories/service.js';
 import { buildSystemPrompt } from './prompts.js';
 import { listMessages, type MessageRow } from './sessions.js';
 
@@ -20,6 +23,7 @@ export interface RunnerDeps {
   hub: ChatEventHub;
   providers: ProviderRegistry;
   titles: TitleQueue;
+  storage: Storage;
   markup: string;
   log?: { error: (obj: unknown, msg?: string) => void };
   /** How often partial content is written to the DB while streaming. */
@@ -45,11 +49,36 @@ const STATUS_BY_STOP: Record<StopReason, TerminalStatus> = {
   error: 'error',
 };
 
+/** Base64 content of image/PDF attachments by id; null when the stored file is missing. */
+export type Blobs = Map<string, string | null>;
+
+function userParts(m: MessageRow, files: AttachmentRow[], blobs: Blobs): ContentPart[] {
+  const parts: ContentPart[] = [];
+  for (const f of files) {
+    if (f.kind === 'text') {
+      parts.push({ type: 'text', text: `[Attached file: ${f.filename}]\n\n${f.extractedText ?? ''}` });
+      continue;
+    }
+    const data = blobs.get(f.id);
+    if (!data) parts.push({ type: 'text', text: `[Attached file unavailable: ${f.filename}]` });
+    else if (f.kind === 'image') parts.push({ type: 'image', mediaType: f.mimeType, data });
+    else parts.push({ type: 'document', mediaType: 'application/pdf', data, filename: f.filename });
+  }
+  const text = m.content || (files.length ? FILES_ONLY_PROMPT : '');
+  if (text) parts.push({ type: 'text', text });
+  return parts;
+}
+
 /**
  * Turns prior messages into provider turns. An exchange whose reply was
- * refused or failed is left out, so the model doesn't see it.
+ * refused or failed is left out, so the model doesn't see it. Attachments
+ * travel with their message on every turn.
  */
-export function historyToTurns(prior: MessageRow[]): ChatMessage[] {
+export function historyToTurns(
+  prior: MessageRow[],
+  files: Map<string, AttachmentRow[]> = new Map(),
+  blobs: Blobs = new Map(),
+): ChatMessage[] {
   const turns: ChatMessage[] = [];
   for (let i = 0; i < prior.length; i++) {
     const m = prior[i]!;
@@ -59,7 +88,7 @@ export function historyToTurns(prior: MessageRow[]): ChatMessage[] {
         i += 1;
         continue;
       }
-      turns.push({ role: 'user', parts: [{ type: 'text', text: m.content }] });
+      turns.push({ role: 'user', parts: userParts(m, files.get(m.id) ?? [], blobs) });
     } else if ((m.status === 'complete' || m.status === 'truncated') && m.content) {
       turns.push({ role: 'assistant', parts: [{ type: 'text', text: m.content }] });
     }
@@ -103,11 +132,23 @@ export class GenerationRunner {
     const idx = all.findIndex((m) => m.id === job.messageId);
     const prior = idx >= 0 ? all.slice(0, idx) : all;
     const options = (prior.at(-1)?.options ?? {}) as MessageOptions;
+    const files = await listForMessages(
+      db,
+      prior.filter((m) => m.role === 'user').map((m) => m.id),
+    );
+    const blobs: Blobs = new Map();
+    for (const f of [...files.values()].flat()) {
+      if (f.kind === 'text') continue;
+      blobs.set(f.id, await this.deps.storage.get(f.storageKey).then((b) => b.toString('base64'), () => null));
+    }
 
     const request: ChatRequest = {
       model: model.providerModelId,
-      system: buildSystemPrompt({ globalSystemPrompt: profile?.globalSystemPrompt }),
-      messages: historyToTurns(prior),
+      system: buildSystemPrompt({
+        globalSystemPrompt: profile?.globalSystemPrompt,
+        memories: session.includeMemories ? await memoriesForPrompt(db, job.userId) : [],
+      }),
+      messages: historyToTurns(prior, files, blobs),
       effort: options.effort ?? undefined,
       thinkingBudgets: model.thinkingBudgets as ChatRequest['thinkingBudgets'],
       maxOutputTokens: model.maxOutputTokens,

@@ -1,12 +1,14 @@
-import { CHAT_ERROR_TEXT, type Effort } from '@wchats/shared';
-import { useState } from 'react';
+import { CHAT_ERROR_TEXT, type SessionDetail } from '@wchats/shared';
+import { useCallback, useState, type DragEvent } from 'react';
 import { useParams } from 'react-router';
 import { ApiError } from '../api/client';
-import { usePostMessage, useSession } from '../api/queries';
+import { usePostMessage, useSession, useSetIncludeMemories } from '../api/queries';
 import { BackToSessions } from '../components/BackToSessions';
-import { Composer } from '../components/chat/Composer';
+import { Composer, type SendInput } from '../components/chat/Composer';
 import { MessageList, type LocalError } from '../components/chat/MessageList';
+import { useAttachments } from '../components/chat/useAttachments';
 import { useSessionStream } from '../components/chat/useSessionStream';
+import { PaperclipIcon } from '../components/icons';
 import { useToast } from '../components/Toast';
 import { usePicker } from '../lib/picker';
 import { NotFoundPage } from './ForbiddenPage';
@@ -19,25 +21,43 @@ export function ChatSessionPage() {
 
 function ChatSession({ sessionId }: { sessionId: string }) {
   const session = useSession(sessionId);
-  const { inflight, connection, activity } = useSessionStream(sessionId);
-  const post = usePostMessage(sessionId);
+  if (session.error instanceof ApiError && session.error.status === 404) return <NotFoundPage />;
+  if (!session.data) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-sm text-lc-grey">
+        {session.isError ? 'Could not load this chat.' : 'Loading…'}
+      </div>
+    );
+  }
+  return <ChatView detail={session.data} />;
+}
+
+function ChatView({ detail }: { detail: SessionDetail }) {
+  const { session: s, messages } = detail;
+  const { inflight, connection, activity } = useSessionStream(s.id);
+  const post = usePostMessage(s.id);
+  const setMemories = useSetIncludeMemories(s.id);
   const toast = useToast();
   const { openPicker } = usePicker();
   const [localError, setLocalError] = useState<LocalError | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const onReject = useCallback((m: string) => toast(m, 'error'), [toast]);
+  const attachments = useAttachments(s.model, onReject);
 
-  if (session.error instanceof ApiError && session.error.status === 404) return <NotFoundPage />;
-  if (!session.data) {
-    return <div className="flex flex-1 items-center justify-center text-sm text-lc-grey">{session.isError ? 'Could not load this chat.' : 'Loading…'}</div>;
-  }
-
-  const { session: s, messages } = session.data;
   const replying =
     inflight !== null || post.isPending || messages.some((m) => m.status === 'pending' || m.status === 'streaming');
+  const canCompose = !s.isRetired;
 
-  async function send(text: string, effort: Effort | undefined): Promise<boolean> {
+  async function send(input: SendInput): Promise<boolean> {
     setLocalError(null);
     try {
-      await post.mutateAsync({ text, effort });
+      await post.mutateAsync({
+        text: input.text,
+        effort: input.effort,
+        webSearch: input.webSearch,
+        multiTurn: input.multiTurn,
+        attachmentIds: input.attachmentIds,
+      });
       return true;
     } catch (e) {
       if (e instanceof ApiError && e.code === 'insufficient_credit') {
@@ -49,8 +69,27 @@ function ChatSession({ sessionId }: { sessionId: string }) {
     }
   }
 
+  const dragHandlers = canCompose
+    ? {
+        onDragEnter: (e: DragEvent) => {
+          if (e.dataTransfer.types.includes('Files')) setDragging(true);
+        },
+        onDragOver: (e: DragEvent) => {
+          if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+        },
+        onDragLeave: (e: DragEvent) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+        },
+        onDrop: (e: DragEvent) => {
+          e.preventDefault();
+          setDragging(false);
+          if (e.dataTransfer.files.length) attachments.add(e.dataTransfer.files);
+        },
+      }
+    : {};
+
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="relative flex h-full min-h-0 flex-col" {...dragHandlers}>
       <header className="flex items-center gap-3 border-b border-lc-border bg-lc-white px-4 py-3 md:px-8">
         <div className="min-w-0 flex-1">
           <BackToSessions />
@@ -77,7 +116,25 @@ function ChatSession({ sessionId }: { sessionId: string }) {
 
       <MessageList messages={messages} inflight={inflight} activity={activity} localError={localError} />
 
-      {!s.isRetired && <Composer model={s.model} disabled={false} busy={replying} onSend={send} />}
+      {canCompose && (
+        <Composer
+          model={s.model}
+          busy={replying}
+          includeMemories={s.includeMemories}
+          onToggleMemories={(on) => setMemories.mutate(on)}
+          attachments={attachments}
+          onSend={send}
+        />
+      )}
+
+      {dragging && (
+        <div className="pointer-events-none absolute inset-2 z-30 flex items-center justify-center rounded-lg border-2 border-dashed border-lc-blue bg-lc-primary-light/90">
+          <div className="flex flex-col items-center gap-2 text-lc-blue">
+            <PaperclipIcon size={28} />
+            <span className="font-display text-lg">Drop files to attach</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

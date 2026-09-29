@@ -1,4 +1,5 @@
 import type { Effort, MessageDto, SessionDetail, SessionSummary, Source } from '@wchats/shared';
+import { listForMessages, toAttachmentDto, type AttachmentRow } from '../attachments/service.js';
 import { and, asc, desc, eq, isNull } from 'drizzle-orm';
 import type { DbOrTx } from '../db/client.js';
 import { billingAccounts, chatSessions, messages, modelFavorites, models } from '../db/schema.js';
@@ -8,15 +9,18 @@ import { toModelSummary } from '../models/catalog.js';
 export type SessionRow = typeof chatSessions.$inferSelect;
 export type MessageRow = typeof messages.$inferSelect;
 
-export function toMessageDto(m: MessageRow): MessageDto {
-  const effort = (m.options as { effort?: Effort | null }).effort ?? null;
+export function toMessageDto(m: MessageRow, files: AttachmentRow[] = []): MessageDto {
+  const options = m.options as { effort?: Effort | null; webSearch?: boolean };
+  const effort = options.effort ?? null;
   return {
     id: m.id,
     role: m.role,
     status: m.status,
     content: m.content,
     sources: (m.sources ?? []) as Source[],
+    attachments: files.map(toAttachmentDto),
     effort,
+    webSearch: options.webSearch ?? false,
     errorCode: m.errorCode,
     errorMessage: m.errorMessage,
     costNanoUsd: m.costNanoUsd === null ? null : m.costNanoUsd.toString(),
@@ -82,6 +86,14 @@ export async function getSessionDetail(db: DbOrTx, userId: string, sessionId: st
       billingAccountName: row.account.name,
       model: toModelSummary(row.m, row.fav !== null),
     },
-    messages: (await listMessages(db, s.id)).map(toMessageDto),
+    messages: await withAttachments(db, await listMessages(db, s.id)),
   };
+}
+
+export async function withAttachments(db: DbOrTx, rows: MessageRow[]): Promise<MessageDto[]> {
+  const files = await listForMessages(
+    db,
+    rows.filter((m) => m.role === 'user').map((m) => m.id),
+  );
+  return rows.map((m) => toMessageDto(m, files.get(m.id)));
 }

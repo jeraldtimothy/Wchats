@@ -1,8 +1,10 @@
 import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 const rootEnv = fileURLToPath(new URL('../../../.env', import.meta.url));
+const apiRoot = fileURLToPath(new URL('..', import.meta.url));
 if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
 
 const optional = z
@@ -34,6 +36,8 @@ const EnvSchema = z.object({
     .string()
     .regex(/^\d+(\.\d{1,2})?$/)
     .default('0'),
+  /** Local upload storage (relative paths resolve from apps/api). */
+  STORAGE_DIR: optional.transform((v) => resolve(apiRoot, v ?? 'storage')),
   SIMGEN_URL: z.string().default('https://example.com/simgen'),
   LOG_LEVEL: z.string().default('info'),
 });

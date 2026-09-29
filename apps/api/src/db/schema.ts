@@ -275,3 +275,54 @@ export const ledgerEntries = pgTable(
   },
   (t) => [index('ledger_account_created_idx').on(t.billingAccountId, t.createdAt)],
 );
+
+// ---------------------------------------------------------------------------
+// Attachments (Phase 2)
+// ---------------------------------------------------------------------------
+
+export const attachmentKindEnum = pgEnum('attachment_kind', ['image', 'pdf', 'text']);
+
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** Null until the upload is sent with a message. */
+    messageId: uuid('message_id').references(() => messages.id, { onDelete: 'cascade' }),
+    kind: attachmentKindEnum('kind').notNull(),
+    mimeType: text('mime_type').notNull(),
+    filename: text('filename').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    storageKey: text('storage_key').notNull(),
+    /** For text/office files: the text sent to the model. */
+    extractedText: text('extracted_text'),
+    truncated: boolean('truncated').notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index('attachments_message_idx').on(t.messageId), index('attachments_user_created_idx').on(t.userId, t.createdAt)],
+);
+
+// ---------------------------------------------------------------------------
+// Memory items (Phase 2; AI-generated ones arrive in Phase 4)
+// ---------------------------------------------------------------------------
+
+export const memoryTypeEnum = pgEnum('memory_type', ['preference', 'fact', 'reminder', 'other']);
+
+export const memoryItems = pgTable(
+  'memory_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    type: memoryTypeEnum('type').notNull(),
+    content: text('content').notNull(),
+    aiGenerated: boolean('ai_generated').notNull().default(false),
+    sourceSessionId: uuid('source_session_id').references(() => chatSessions.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index('memory_items_user_idx').on(t.userId, t.createdAt)],
+);

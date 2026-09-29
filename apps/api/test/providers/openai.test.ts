@@ -38,6 +38,7 @@ describe('OpenAIProvider', () => {
       max_output_tokens: 1000,
       reasoning: { effort: 'high' },
       tools: [{ type: 'web_search' }],
+      include: ['web_search_call.action.sources'],
     });
     const input = params.input as { role: string; content: unknown }[];
     expect(input[1]).toEqual({ role: 'assistant', content: 'Hi!' });

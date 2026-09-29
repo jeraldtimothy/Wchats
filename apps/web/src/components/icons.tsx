@@ -102,3 +102,25 @@ export const AlertIcon = (p: IconProps) => (
     <path d="M12 8v5M12 16h.01" />
   </Icon>
 );
+export const PaperclipIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m21 11-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9" />
+  </Icon>
+);
+export const FileIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
+    <path d="M14 3v6h6" />
+  </Icon>
+);
+export const ToolsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-3-3 8-8M3 21l6-6M9.3 9.3 5 5M3 7l4-4 3 3-4 4Z" />
+  </Icon>
+);
+export const GlobeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+  </Icon>
+);

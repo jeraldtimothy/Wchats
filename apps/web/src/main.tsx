@@ -13,6 +13,7 @@ import { NotFoundPage } from './routes/ForbiddenPage';
 import { DefaultAppRedirect, RequireFrontend, RequireManager } from './routes/guards';
 import { LoginPage } from './routes/LoginPage';
 import { PlaceholderPage } from './routes/PlaceholderPage';
+import { ProfilePage } from './routes/ProfilePage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -51,14 +52,7 @@ const router = createBrowserRouter([
           </RequireFrontend>
         ),
       },
-      {
-        path: 'profile',
-        element: (
-          <PlaceholderPage title="My Profile" phase={2}>
-            Your profile, global system prompt, memory items, default app and billing balances.
-          </PlaceholderPage>
-        ),
-      },
+      { path: 'profile', element: <ProfilePage /> },
       {
         path: 'iam',
         element: (

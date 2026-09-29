@@ -10,12 +10,17 @@ import { HttpError } from './http/errors.js';
 import { createProvidersFromEnv, type ProviderRegistry } from './providers/index.js';
 import { chatRoutes } from './routes/chat.js';
 import { meRoutes } from './routes/me.js';
+import { memoryRoutes } from './routes/memories.js';
+import { profileRoutes } from './routes/profile.js';
+import { uploadRoutes } from './routes/uploads.js';
+import { LocalDiskStorage, type Storage } from './storage/index.js';
 import { modelRoutes } from './routes/models.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     providers: ProviderRegistry;
     chat: { hub: ChatEventHub; runner: GenerationRunner; titles: TitleQueue };
+    storage: Storage;
   }
 }
 
@@ -26,6 +31,7 @@ export interface BuildAppOptions {
   hub?: ChatEventHub;
   /** Defaults to running title jobs in-process. main.ts passes the pg-boss queue. */
   titles?: TitleQueue;
+  storage?: Storage;
 }
 
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
@@ -53,8 +59,10 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   const hub = options.hub ?? new InMemoryChatEventHub();
   const log = { error: (obj: unknown, msg?: string) => app.log.error(obj, msg) };
   const titles = options.titles ?? new InlineTitleQueue({ db, hub, providers, markup: env.MARKUP }, log);
-  const runner = new GenerationRunner({ db, hub, providers, titles, markup: env.MARKUP, log });
+  const storage = options.storage ?? new LocalDiskStorage(env.STORAGE_DIR);
+  const runner = new GenerationRunner({ db, hub, providers, titles, storage, markup: env.MARKUP, log });
   app.decorate('providers', providers);
+  app.decorate('storage', storage);
   app.decorate('chat', { hub, runner, titles });
   app.addHook('onClose', async () => {
     await runner.idle();
@@ -81,5 +89,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(meRoutes);
   await app.register(modelRoutes);
   await app.register(chatRoutes);
+  await app.register(uploadRoutes);
+  await app.register(memoryRoutes);
+  await app.register(profileRoutes);
   return app;
 }

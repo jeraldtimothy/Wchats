@@ -131,7 +131,11 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | cost_nano_usd | bigint null | computed charge (after markup) |
 | created_at, completed_at | timestamptz | |
 
-Later: `attachments` (P2: id, user_id, message_id, kind, mime, filename, size, storage_key, extracted_text), `memory_items` (P2: id, user_id, type, content, ai_generated, source_session_id), `ask_history` (P3), `agent_runs` + `agent_run_events` (P4).
+### Attachments and memories (P2)
+- **`attachments`**: `id`, `user_id`, `message_id` (null until sent; cascades with the message), `kind` (`image`/`pdf`/`text`), `mime_type`, `filename`, `size_bytes`, `storage_key`, `extracted_text` (text/office files), `truncated`, `created_at`.
+- **`memory_items`**: `id`, `user_id`, `type` (`preference`/`fact`/`reminder`/`other`), `content` (≤ 2000 chars, ≤ 200 per user), `ai_generated`, `source_session_id`, timestamps.
+
+Later: `ask_history` (P3), `agent_runs` + `agent_run_events` (P4).
 
 pg-boss keeps its own `pgboss` schema.
 
@@ -160,8 +164,10 @@ Request and response bodies are Zod schemas in `packages/shared`.
 | `DELETE /api/chat/v2/session/:id` | P1 | soft delete |
 | `POST /api/chat/v2/session/:id/post-message` | P1 | `{text, effort?, webSearch?, multiTurn?, attachmentIds?}` → `202 {userMessage, assistantMessage}` |
 | `GET /api/chat/v2/session/:id/listen` | P1 | SSE stream (section 5) |
-| `POST /api/uploads` | P2 | multipart upload → attachment id |
-| `GET/PUT /api/profile`, `/api/memories` CRUD | P2 | profile page |
+| `POST /api/uploads` | P2 | multipart upload (≤ 20 MB) → `AttachmentDto`; bytes must match the extension |
+| `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` | P2 | owner-only download (`nosniff`, sandbox CSP); delete while unsent |
+| `GET/PATCH /api/profile` | P2 | profile card, global prompt, AI memories toggle, default app, balances |
+| `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id` | P2 | memory items |
 | `POST /api/ask` (+ `GET /api/ask/:id/listen`) | P3 | one-shot Q&A |
 | `/api/iam/users`, `/api/iam/billing-accounts`, `/api/iam/models`, `/api/iam/usage(.csv)` | P3 | manager console |
 | `POST /api/agent-run`, `GET /api/agent-run/:id`, `GET /api/agent-run/:id/events`, `POST /api/agent-run/:id/cancel` | P4 | agent mode |
@@ -348,3 +354,8 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 | D15 | Effort falls back to the provider's native control when a model has no configured budget (Anthropic adaptive thinking + `output_config.effort`; Gemini `thinkingLevel`) | Newer Claude and Gemini models favour these over fixed budgets. Budgets in the seed config still win when set. |
 | D16 | `buildApp` runs title jobs in-process by default; `main.ts` swaps in the pg-boss queue | Tests and scripts don't need a pg-boss worker. Production titles stay durable, with retries. |
 | D17 | A refused or failed exchange is left out of later requests' history | Matches "Rephrase it before continuing": the declined prompt isn't replayed to the provider. |
+| D18 | Office text is extracted with fflate plus a small OOXML walker, not officeparser or SheetJS | No transitive dependencies, declared-size limits before inflating (fflate also never inflates past the declared size), and npm SheetJS is a stale build with CVEs (study 0002). |
+| D19 | Images need `supports_images`; PDFs need `supports_documents`; text and office files work with every model | PDFs go natively, while text/office files arrive as text. |
+| D20 | Uploads are stored first and linked in `post-message`; a daily pg-boss job (`cleanup-uploads`) deletes unsent uploads older than 24 h | Files show progress and errors before sending, and abandoned uploads don't pile up. |
+| D21 | Attachments are re-sent with their message on every later turn | The model keeps the context. Cost grows with history; a future option could drop old binaries. |
+| D22 | A default app of SimGen sends the user to `SIMGEN_URL` right after sign-in; `/` still resolves to an in-app page | SimGen is external. Redirecting on every visit to `/` would trap the user outside the app. |
