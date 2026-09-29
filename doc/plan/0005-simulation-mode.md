@@ -14,8 +14,9 @@ The owner wants to use the app end to end before real provider keys are availabl
 - [x] `/api/me` `config.simulation`; a "Simulation mode" pill in the sidebar and a note in the model picker
 
 ## Wiki
-- [ ] providers + getting-started: simulation mode, triggers, and that charges are recorded against simulated usage
+- [x] providers + getting-started: simulation mode, triggers, and that charges are recorded against simulated usage
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] smoke: with `LLM_SIMULATION=1`, a chat reply streams through the proxy for each provider, and a web-search reply carries sources
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] smoke: with `LLM_SIMULATION=1`, a chat reply streams through the proxy for each provider, and a web-search reply carries sources
+  - Note: GPT-5.6 Luna, Claude Opus 5 (thinking + web search, 2 sources) and Gemini 3.1 Pro (truncation trigger) each streamed, got a live title and were billed.
