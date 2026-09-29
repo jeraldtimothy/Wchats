@@ -58,10 +58,10 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] selecting a model creates the session and navigates to it
 
 ## feat(web): add streaming chat view
-- [ ] message list (user right/light-blue, assistant left/grey), sanitized Markdown + highlight.js + code copy, message copy + toast, scroll-to-bottom
-- [ ] composer: model pill, thinking effort select, Enter/Shift+Enter
-- [ ] `useSessionStream` SSE hook with reconnect replay; inline refusal/truncated/insufficient-credit errors
-- [ ] retired-model read-only banner; empty state tile
+- [x] message list (user right/light-blue, assistant left/grey), sanitized Markdown + highlight.js + code copy, message copy + toast, scroll-to-bottom
+- [x] composer: model pill, thinking effort select, Enter/Shift+Enter
+- [x] `useSessionStream` SSE hook with reconnect replay; inline refusal/truncated/insufficient-credit errors
+- [x] retired-model read-only banner; empty state tile
 
 ## Wiki
 - [ ] `doc/wiki/README.md` index + pages: getting-started, api, chat-streaming, providers, billing, web

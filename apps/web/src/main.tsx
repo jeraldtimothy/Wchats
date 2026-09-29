@@ -5,6 +5,7 @@ import { createBrowserRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { AppLayout } from './components/AppLayout';
 import { ToastProvider } from './components/Toast';
+import 'highlight.js/styles/github.css';
 import './index.css';
 import { ChatHome } from './routes/ChatHome';
 import { ChatSessionPage } from './routes/ChatSessionPage';
