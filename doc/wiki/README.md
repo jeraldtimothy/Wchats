@@ -11,7 +11,6 @@ The living manual of the codebase. Every page here describes the code as it is o
 - [Billing](billing.md): prices, cost math, the ledger and the balance gate
 - [Attachments](attachments.md): uploads, type checks, office text extraction, storage
 - [Profile and memories](profile-and-memories.md): profile API, memory items, system prompt assembly
-- [Ask](ask.md): one-shot questions as hidden sessions
 - [IAM and Billing](iam.md): users, billing accounts, credit, ledger, usage, CSV, model catalog
 - [Web app](web.md): routes, layout, picker, chat view, theme
 

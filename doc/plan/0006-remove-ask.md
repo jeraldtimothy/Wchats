@@ -12,8 +12,9 @@ The owner decided Ask isn't needed ("we can just remove it completely"). It over
 - [x] seed + tests: drop Ask (`ask.test.ts` removed; frontend expectations updated)
 
 ## Wiki
-- [ ] delete `ask.md`; update README index, api, web, iam, profile-and-memories, chat-streaming; ARCHITECTURE (routes, frontends, decision)
+- [x] delete `ask.md`; update README index, api, web, iam, profile-and-memories, chat-streaming; ARCHITECTURE (routes, frontends, decision)
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] the running app shows no Ask tab, and chat still works end to end through the proxies
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] the running app shows no Ask tab, and chat still works end to end through the proxies
+  - Note: `/api/ask/*` returns 404, the sidebar has no Ask link, and the demo users' apps are `chat` (+ `simgen` for the admin). One Claude proxy request timed out once (a transient proxy issue; direct retries answered in about 1s), then all three providers replied through the app.

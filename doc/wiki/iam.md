@@ -9,7 +9,7 @@ Manager console at `/iam` (web: `routes/iam/`; API: `apps/api/src/routes/iam/`).
   - A manager can't disable themselves or remove their own manager flag.
   - Disabling deletes the user's Better Auth sessions (they're signed out everywhere), and sign-in stays blocked.
   - If `default_app` is no longer allowed, it moves to the first allowed in-app frontend.
-- UI: app chips (Chat / Ask / SimGen), a manager switch, enable/disable, and "Manage" to tick the shared accounts a user belongs to.
+- UI: app chips (Chat / SimGen), a manager switch, enable/disable, and "Manage" to tick the shared accounts a user belongs to.
 
 ## Billing accounts (`accounts.ts`, `AccountsTab.tsx`)
 
@@ -41,5 +41,5 @@ The UI has an account list with search and "Create", plus an "All accounts" usag
   - Thinking budgets: 1024–200 000.
   - The default effort must be one of the allowed efforts. When efforts change, it falls back to the first one, or `null` if there are none.
   - Every edit sets `edited_at`.
-- Retiring hides a model from the picker and Ask and makes its chats read-only. The agent switch is stored for Phase 4.
+- Retiring hides a model from the picker and makes its chats read-only. The agent switch is stored for Phase 4.
 - `pnpm seed` skips models with `edited_at` and names them; `pnpm seed --force-models` makes the config win and clears `edited_at`.

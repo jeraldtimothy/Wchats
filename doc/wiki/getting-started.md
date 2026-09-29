@@ -25,8 +25,8 @@ Uploads are stored under `apps/api/storage` (gitignored) unless `STORAGE_DIR` is
 
 | Email | Password | Role | Credit |
 |---|---|---|---|
-| `admin@litechat.local` | `admin-password-123` | manager; chat, ask, simgen | $25 personal |
-| `user@litechat.local` | `user-password-123` | user; chat, ask | $5 personal |
+| `admin@litechat.local` | `admin-password-123` | manager; chat, simgen | $25 personal |
+| `user@litechat.local` | `user-password-123` | user; chat | $5 personal |
 
 Both are members of the shared account "Acme Research" ($100).
 

@@ -30,10 +30,9 @@ Every error is `{ "error": { "code", "message" } }` with codes from `packages/sh
 | `GET/PATCH/DELETE /api/chat/v2/session/:id` | chat | detail / rename or `includeMemories` / soft delete |
 | `POST /api/chat/v2/session/:id/post-message` | chat | 202; see [chat streaming](chat-streaming.md) |
 | `GET /api/chat/v2/session/:id/listen` | chat | SSE; see [chat streaming](chat-streaming.md) |
-| `POST /api/ask`, `GET /api/ask/history`, `GET /api/ask/:id(/listen)`, `DELETE /api/ask/:id` | ask | see [Ask](ask.md) |
 | `/api/iam/users`, `/api/iam/billing-accounts/**`, `/api/iam/usage(.csv)`, `/api/iam/models` | manager | see [IAM and Billing](iam.md) |
 
-Sessions belonging to other users, deleted ones, or ones of the other kind (chat vs Ask) return 404. Shared request helpers: `src/http/dates.ts` (inclusive UTC date ranges), `src/http/csv.ts` (safe CSV).
+Sessions belonging to other users, deleted ones, or leftover questions from the removed Ask app (`kind = 'ask'`) return 404. Shared request helpers: `src/http/dates.ts` (inclusive UTC date ranges), `src/http/csv.ts` (safe CSV).
 
 ## Auth and provisioning
 
