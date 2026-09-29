@@ -36,6 +36,13 @@
       "when": 1790662063350,
       "tag": "0004_session_kind",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790662437332,
+      "tag": "0005_model_edited_at",
+      "breakpoints": true
     }
   ]
 }

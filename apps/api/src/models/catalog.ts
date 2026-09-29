@@ -1,5 +1,5 @@
 import type { Effort, ModelSummary } from '@wchats/shared';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { SeedModel } from '../../seed/models.config.js';
 import type { DbOrTx } from '../db/client.js';
 import { modelFavorites, models } from '../db/schema.js';
@@ -45,11 +45,23 @@ export async function listPickerModels(
     .map((r) => toModelSummary(r.model, r.favoriteAt !== null));
 }
 
-export async function upsertModels(db: DbOrTx, seed: SeedModel[]): Promise<void> {
+/**
+ * Inserts new seed models and updates existing ones from the config, except
+ * rows a manager edited in IAM (`edited_at` set). `force` lets the config win
+ * everywhere and clears `edited_at`. Returns the slugs that were kept as edited.
+ */
+export async function upsertModels(db: DbOrTx, seed: SeedModel[], opts: { force?: boolean } = {}): Promise<string[]> {
   for (const [i, m] of seed.entries()) {
-    const values = { ...m, sortOrder: i };
-    await db.insert(models).values(values).onConflictDoUpdate({ target: models.slug, set: values });
+    const values = { ...m, sortOrder: i, editedAt: null };
+    await db
+      .insert(models)
+      .values(values)
+      .onConflictDoUpdate({ target: models.slug, set: values, ...(opts.force ? {} : { setWhere: isNull(models.editedAt) }) });
   }
+  if (opts.force) return [];
+  const kept = await db.select({ slug: models.slug }).from(models).where(isNotNull(models.editedAt));
+  const seeded = new Set(seed.map((m) => m.slug));
+  return kept.map((k) => k.slug).filter((s) => seeded.has(s));
 }
 
 /** Cheapest configured, non-retired model by input + output price (used for titles). */

@@ -136,6 +136,8 @@ export const models = pgTable('models', {
   isRetired: boolean('is_retired').notNull().default(false),
   agentEnabled: boolean('agent_enabled').notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
+  /** Set when a manager edits the model in IAM; `pnpm seed` then leaves the row alone. */
+  editedAt: timestamp('edited_at', { withTimezone: true }),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
 });

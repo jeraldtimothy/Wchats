@@ -54,8 +54,12 @@ async function ensureUser(u: (typeof USERS)[number]): Promise<string> {
 
 async function main(): Promise<void> {
   await runMigrations(env.DATABASE_URL);
-  await upsertModels(db, seedModels);
-  console.log(`✓ ${seedModels.length} models upserted`);
+  const force = process.argv.includes('--force-models');
+  const kept = await upsertModels(db, seedModels, { force });
+  console.log(`✓ ${seedModels.length} models upserted${force ? ' (config overrides IAM edits)' : ''}`);
+  if (kept.length) {
+    console.log(`  kept IAM edits for: ${kept.join(', ')} (run \`pnpm seed --force-models\` to overwrite)`);
+  }
 
   const ids: string[] = [];
   for (const u of USERS) {

@@ -24,9 +24,9 @@ Branch: `feat/0003-phase-3`
 - [x] tests
 
 ## feat(iam): add model catalog editing
-- [ ] `GET /api/iam/models`, `PATCH /api/iam/models/:id` (validated fields, prices, retire, agent) setting `edited_at` (+ migration)
-- [ ] seed skips IAM-edited models unless `--force-models`
-- [ ] tests
+- [x] `GET /api/iam/models`, `PATCH /api/iam/models/:id` (validated fields, prices, retire, agent) setting `edited_at` (+ migration)
+- [x] seed skips IAM-edited models unless `--force-models`
+- [x] tests
 
 ## feat(web): add Ask page
 - [ ] model + account + effort + web search, streamed Markdown answer with inline errors, history list with open/delete
