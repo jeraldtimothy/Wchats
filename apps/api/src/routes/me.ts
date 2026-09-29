@@ -20,7 +20,7 @@ export async function meRoutes(app: FastifyInstance): Promise<void> {
         defaultApp: profile.defaultApp as Frontend,
       },
       billingAccounts: await listAccountsForUser(db, user.id),
-      config: { googleAuthEnabled, simgenUrl: env.SIMGEN_URL },
+      config: { googleAuthEnabled, simgenUrl: env.SIMGEN_URL, simulation: env.LLM_SIMULATION },
     };
   });
 
