@@ -11,6 +11,7 @@ import { createProvidersFromEnv, type ProviderRegistry } from './providers/index
 import { chatRoutes } from './routes/chat.js';
 import { meRoutes } from './routes/me.js';
 import { memoryRoutes } from './routes/memories.js';
+import { profileRoutes } from './routes/profile.js';
 import { uploadRoutes } from './routes/uploads.js';
 import { LocalDiskStorage, type Storage } from './storage/index.js';
 import { modelRoutes } from './routes/models.js';
@@ -90,5 +91,6 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(chatRoutes);
   await app.register(uploadRoutes);
   await app.register(memoryRoutes);
+  await app.register(profileRoutes);
   return app;
 }

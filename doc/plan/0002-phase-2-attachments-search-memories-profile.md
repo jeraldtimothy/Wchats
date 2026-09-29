@@ -25,8 +25,8 @@ Branch: `feat/0002-phase-2`
 - [x] tests: CRUD + ownership, prompt includes memories only when enabled
 
 ## feat(profile): add profile endpoints
-- [ ] `GET /api/profile`, `PATCH /api/profile` (global system prompt, generate AI memories, default app ∈ allowed frontends)
-- [ ] tests
+- [x] `GET /api/profile`, `PATCH /api/profile` (global system prompt, generate AI memories, default app ∈ allowed frontends)
+- [x] tests
 
 ## feat(web): add attachments, tools, memories toggle and sources to chat
 - [ ] composer: paperclip + drag-and-drop with type gating, upload chips with remove, files-only send
