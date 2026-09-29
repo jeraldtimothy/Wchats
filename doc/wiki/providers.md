@@ -22,7 +22,7 @@ Code: `apps/api/src/providers/`. Nothing outside this folder imports a provider 
 | Images / PDFs | `input_image` / `input_file` data URLs | `image` / `document` base64 blocks | `inlineData` |
 | Refusal | refusal deltas, `content_filter` | `stop_reason: refusal` | SAFETY-type finish reasons, `promptFeedback.blockReason` |
 
-The usage normalization for each provider is in ARCHITECTURE.md §6. `util.ts` has `mergeTurns` (merges consecutive same-role turns), `SourceSet` (de-duplicates URLs) and `safeErrorMessage` (generic texts for 401/403/429/404/5xx; redacts anything that looks like a key).
+The usage normalization for each provider is in ARCHITECTURE.md §6. `util.ts` has `mergeTurns` (merges consecutive same-role turns), `SourceSet` (de-duplicates URLs) and `safeErrorMessage` (generic texts for 401/403/429/404/5xx and for invalid-key errors reported with other statuses, such as Google's 400 `API_KEY_INVALID`; unwraps JSON error bodies to their message; redacts anything that looks like a key).
 
 ## Tests
 
