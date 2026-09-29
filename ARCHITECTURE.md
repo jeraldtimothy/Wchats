@@ -14,7 +14,7 @@ apps/
       billing/         pricing math, ledger service, balance gate
       chat/            sessions, messages, generation runner, event hub, SSE
       db/              schema.ts, client, migrate
-      jobs/            pg-boss boot + workers (titles; memories P4)
+      jobs/            pg-boss boot + workers (titles, upload cleanup, AI memories)
       models/          catalog queries, favorites, check-models script
       providers/       LLMProvider interface + openai / anthropic / gemini adapters
       storage/         Storage interface + local-disk implementation (P2)
@@ -41,7 +41,7 @@ Browser (Vite SPA, :5173) ──/api proxy──▶ Fastify API (:3000)
               Better Auth             GenerationRunner ──▶ LLMProvider adapters ──▶ OpenAI / Anthropic / Gemini
             (cookie sessions)         │   (in-process)
                                       ├─▶ ChatEventHub ──▶ SSE /listen subscribers
-                                      └─▶ Billing (ledger tx) ──▶ PostgreSQL 16 ◀── pg-boss (titles, memories, agent)
+                                      └─▶ Billing (ledger tx) ──▶ PostgreSQL 16 ◀── pg-boss (titles, uploads, memories)
 ```
 
 In development, Vite proxies `/api` to the API, so the browser sees a single origin and cookies are plain first-party `httpOnly`, `SameSite=Lax` cookies.
@@ -65,7 +65,7 @@ One row per user, created in Better Auth's `user.create.after` hook.
 | is_disabled | bool default false | disabled users get 403 on every app route |
 | default_app | text default `chat` | `simgen`, `ask` or `chat` (P2 UI) |
 | global_system_prompt | text default '' | (P2 UI) |
-| generate_ai_memories | bool default false | (P4 job) |
+| generate_ai_memories | bool default false | opt-in for the nightly `crawl-memories` job (P4) |
 
 ### `models` (P1)
 Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Editable in IAM (P3).
@@ -113,7 +113,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | created_at | timestamptz | |
 
 ### Chat (P1)
-- **`chat_sessions`**: `id`, `kind` (`chat` | `ask`, P3), `user_id`, `model_id`, `billing_account_id`, `title` (null until generated; Ask sessions never get one), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4).
+- **`chat_sessions`**: `id`, `kind` (`chat` | `ask`, P3), `user_id`, `model_id`, `billing_account_id`, `title` (null until generated; Ask sessions never get one), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4: last read by the AI-memory job).
 - **`messages`**
 
 | column | type | notes |
@@ -137,7 +137,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 - **`attachments`**: `id`, `user_id`, `message_id` (null until sent; cascades with the message), `kind` (`image`/`pdf`/`text`), `mime_type`, `filename`, `size_bytes`, `storage_key`, `extracted_text` (text/office files), `truncated`, `created_at`.
 - **`memory_items`**: `id`, `user_id`, `type` (`preference`/`fact`/`reminder`/`other`), `content` (≤ 2000 chars, ≤ 200 per user), `ai_generated`, `source_session_id`, timestamps.
 
-Ask (P3) needs no table of its own: a question is a `chat_sessions` row with `kind = 'ask'`. Later: `agent_runs` + `agent_run_events` (P4).
+Ask (P3) needs no table of its own: a question is a `chat_sessions` row with `kind = 'ask'`. Agent mode (`agent_runs` + `agent_run_events`) was dropped by the owner in P4; `models.agent_enabled` remains but nothing reads it.
 
 pg-boss keeps its own `pgboss` schema.
 
@@ -175,7 +175,6 @@ Request and response bodies are Zod schemas in `packages/shared`.
 | `GET/POST /api/iam/billing-accounts`, `GET/PATCH /api/iam/billing-accounts/:id`, `PUT/DELETE …/:id/members/:userId`, `POST …/:id/credit`, `GET …/:id/ledger(.csv)` | P3 | accounts, members, credit, ledger (keyset paging, CSV) |
 | `GET /api/iam/usage(.csv)?groupBy=user\|model&from&to&accountId` | P3 | usage reports |
 | `GET /api/iam/models`, `PATCH /api/iam/models/:id` | P3 | catalog editing (prices, retire, agent) |
-| `POST /api/agent-run`, `GET /api/agent-run/:id`, `GET /api/agent-run/:id/events`, `POST /api/agent-run/:id/cancel` | P4 | agent mode |
 
 ### post-message flow (P1)
 1. Load the session. It must be owned by the user, not deleted, and its model must not be retired (409 `model_retired`).
@@ -324,7 +323,6 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 |---|---|---|
 | `generate-title` | the first complete assistant reply in a session. Uses the cheapest configured, non-retired model (lowest input + output price) with a short prompt, charges the session's account, updates `chat_sessions.title`, and publishes `session.updated`. Retries 2×. | P1 |
 | `crawl-memories` | nightly cron. Reads users with `generate_ai_memories` and sessions where `crawled_at IS NULL OR last_activity_at > crawled_at`, and proposes AI memory items. | P4 |
-| `agent-run` | agent mode steps | P4 |
 
 ## 10. Web app
 
@@ -371,3 +369,7 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 | D27 | IAM credit input is USD with ≤ 2 decimals; grants > 0, adjustments ± (≠ 0), reason required. Report ranges are inclusive UTC days (default 30, max 366) | Predictable money entry, and date ranges that don't depend on the viewer's timezone. |
 | D28 | Ledger paging uses an opaque keyset cursor over the exact (microsecond) timestamp text + id | JS Dates only keep milliseconds, so a Date-based cursor could skip or repeat rows. |
 | D29 | CSV cells that start with `= + - @`, tab or CR get a leading `'`, except plain numbers | Blocks spreadsheet formula injection from user-supplied names and reasons, while negative amounts stay numeric. |
+| D30 | Agent mode is dropped from P4 at the owner's request (2026-09-29) | "Not something users actually see." The `agent_enabled` column and the IAM switch are kept but unused. |
+| D31 | The AI-memory job asks for strict JSON in the prompt and parses it tolerantly with Zod (fences and prose allowed; unknown types become `other`) | Works with every adapter unchanged; a bad reply just yields no items (study 0004). |
+| D32 | Memory crawl scope: opted-in, enabled users with personal-account credit; ≤ 20 sessions per night, oldest activity first; ≤ 5 new items; sensitive data and other people excluded; charged to the personal account | Bounded cost per user, and privacy by default. A provider failure leaves sessions uncrawled so the next run retries. |
+| D33 | Phone form controls are 16px, the app uses `100dvh`, and the composer respects `safe-area-inset-bottom` | Prevents iOS focus zoom and address-bar jumps. |

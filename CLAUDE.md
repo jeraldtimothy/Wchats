@@ -132,7 +132,7 @@ The commands that define "the codebase is workable." Rendezvous and Quick-lane c
 pnpm check   # = pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
-`pnpm test` runs API integration tests against `TEST_DATABASE_URL` (created and migrated automatically), so PostgreSQL must be running. See [doc/wiki/getting-started.md](doc/wiki/getting-started.md).
+`pnpm test` runs the web unit tests and the API integration tests against `TEST_DATABASE_URL` (created and migrated automatically), so PostgreSQL must be running. See [doc/wiki/getting-started.md](doc/wiki/getting-started.md).
 
 ## Commits
 

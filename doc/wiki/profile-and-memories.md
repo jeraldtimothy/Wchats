@@ -12,7 +12,17 @@
 
 ## Generate AI Memories
 
-The toggle is stored (`profiles.generate_ai_memories`), and `memory_items.ai_generated` exists for the badge. The nightly job that proposes items is Phase 4.
+When `profiles.generate_ai_memories` is on, the pg-boss cron job `crawl-memories` (02:30 nightly; `apps/api/src/memories/crawl.ts`) proposes items. Run it on demand with `pnpm memories:run [--user <id>]`.
+
+For each opted-in, enabled user whose **personal** account has credit:
+
+1. It reads up to 20 sessions (chat and Ask, not deleted) where `crawled_at IS NULL OR last_activity_at > crawled_at`, oldest activity first. Each transcript uses complete user and assistant turns, capped at 12 000 characters.
+2. It sends the existing items plus the numbered conversations to the cheapest configured model (lowest effort) with `MEMORY_SYSTEM`. That prompt asks for at most 5 new durable items as JSON, excluding sensitive data (health, finances, credentials, government IDs, precise addresses) and details about other people.
+3. `parseProposal` extracts the JSON, tolerating fences and prose; unknown types become `other`.
+4. Items that duplicate existing ones (after normalizing text) are dropped, and the 200-item cap is respected.
+5. It inserts the items with `ai_generated = true` and `source_session_id`, charges the personal account (`usage_charge`, reason `AI memories`, model recorded), and sets `crawled_at` on the sessions it read.
+
+If the provider errors, the charge for any reported usage is still recorded, but the sessions stay uncrawled so the next run retries. An unusable reply marks them crawled with no items. The Profile page shows these items with an "AI-generated" badge.
 
 ## Web (`routes/ProfilePage.tsx`)
 

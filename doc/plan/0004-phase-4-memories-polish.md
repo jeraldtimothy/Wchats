@@ -18,8 +18,9 @@ Agent mode was dropped by the owner (see the study).
 - [x] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases
 
 ## Wiki
-- [ ] document the memory job; update profile-and-memories, web, getting-started, index; ARCHITECTURE (agent mode dropped, decisions)
+- [x] document the memory job; update profile-and-memories, web, getting-started, index; ARCHITECTURE (agent mode dropped, decisions)
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] smoke: `pnpm memories:run` against the mock provider creates items for an opted-in user
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] smoke: `pnpm memories:run` against the mock provider creates items for an opted-in user
+  - Note: the first run crawled 3 sessions, added 1 AI-generated item with its source session, and charged 'AI memories'; an immediate rerun found nothing new.
