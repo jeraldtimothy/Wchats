@@ -12,7 +12,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "seed": "tsx seed/seed.ts",
-    "check-models": "tsx src/models/check-models.ts"
+    "check-models": "tsx src/models/check-models.ts",
+    "memories:run": "tsx src/memories/run-crawl.ts"
   },
   "devDependencies": {
     "@types/pg": "^8.23.1",

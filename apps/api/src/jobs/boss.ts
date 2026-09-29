@@ -2,9 +2,14 @@ import { PgBoss } from 'pg-boss';
 import { cleanupUnsent } from '../attachments/service.js';
 import type { TitleQueue } from '../chat/runner.js';
 import { generateTitle, type TitleDeps } from '../chat/titles.js';
+import { crawlMemories } from '../memories/crawl.js';
 import type { Storage } from '../storage/index.js';
 
-export const QUEUES = { generateTitle: 'generate-title', cleanupUploads: 'cleanup-uploads' } as const;
+export const QUEUES = {
+  generateTitle: 'generate-title',
+  cleanupUploads: 'cleanup-uploads',
+  crawlMemories: 'crawl-memories',
+} as const;
 
 /** Durable background jobs. Started by main.ts, not by buildApp (tests don't need it). */
 export async function startJobs(
@@ -26,6 +31,13 @@ export async function startJobs(
   await boss.schedule(QUEUES.cleanupUploads, '17 3 * * *');
   await boss.work(QUEUES.cleanupUploads, async () => {
     await cleanupUnsent(deps.db, deps.storage);
+  });
+
+  // Nightly: propose AI memory items for users who opted in.
+  await boss.createQueue(QUEUES.crawlMemories, { retryLimit: 1 });
+  await boss.schedule(QUEUES.crawlMemories, '30 2 * * *');
+  await boss.work(QUEUES.crawlMemories, async () => {
+    await crawlMemories({ db: deps.db, providers: deps.providers, markup: deps.markup, log });
   });
 
   const titles: TitleQueue = {

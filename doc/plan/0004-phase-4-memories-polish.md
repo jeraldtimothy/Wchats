@@ -6,10 +6,10 @@ Branch: `feat/0004-phase-4`
 Agent mode was dropped by the owner (see the study).
 
 ## feat(memories): generate AI memory items nightly
-- [ ] `chat_sessions.crawled_at` + migration
-- [ ] `crawlMemories()`: opted-in users, uncrawled/updated sessions, cheapest model, strict JSON parse, dedupe against existing, cap, charge, mark crawled
-- [ ] pg-boss cron `crawl-memories` (02:30) + `pnpm memories:run`
-- [ ] tests (fake provider): items inserted as AI-generated, sessions marked, opt-out/zero-credit skipped, bad JSON tolerated, provider errors retried, recrawl only after new activity
+- [x] `chat_sessions.crawled_at` + migration
+- [x] `crawlMemories()`: opted-in users, uncrawled/updated sessions, cheapest model, strict JSON parse, dedupe against existing, cap, charge, mark crawled
+- [x] pg-boss cron `crawl-memories` (02:30) + `pnpm memories:run`
+- [x] tests (fake provider): items inserted as AI-generated, sessions marked, opt-out/zero-credit skipped, bad JSON tolerated, provider errors retried, recrawl only after new activity
 
 ## fix(web): polish error states, retired sessions and mobile
 - [ ] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)

@@ -43,6 +43,13 @@
       "when": 1790662437332,
       "tag": "0005_model_edited_at",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790664079593,
+      "tag": "0006_session_crawled_at",
+      "breakpoints": true
     }
   ]
 }

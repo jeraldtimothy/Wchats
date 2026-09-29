@@ -16,7 +16,8 @@
     "db:generate": "pnpm --filter @wchats/api db:generate",
     "db:migrate": "pnpm --filter @wchats/api db:migrate",
     "seed": "pnpm --filter @wchats/api seed",
-    "check-models": "pnpm --filter @wchats/api check-models"
+    "check-models": "pnpm --filter @wchats/api check-models",
+    "memories:run": "pnpm --filter @wchats/api memories:run"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
