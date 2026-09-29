@@ -34,8 +34,8 @@ Branch: `feat/0002-phase-2`
 - [x] messages: attachment chips/thumbnails; web sources as numbered chips; search activity line
 
 ## feat(web): add profile page
-- [ ] cards: User Profile, Global System Prompt, Memory Items (add/edit/delete, empty state), Generate AI Memories, Default App, Billing Accounts
-- [ ] post-login landing honours the default app (SimGen → external URL)
+- [x] cards: User Profile, Global System Prompt, Memory Items (add/edit/delete, empty state), Generate AI Memories, Default App, Billing Accounts
+- [x] post-login landing honours the default app (SimGen → external URL)
 
 ## Wiki
 - [ ] update api, chat-streaming, providers, web, getting-started; add attachments and profile pages

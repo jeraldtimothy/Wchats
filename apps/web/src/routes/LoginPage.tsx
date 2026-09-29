@@ -2,6 +2,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { authClient } from '../api/auth';
+import type { MeResponse } from '@wchats/shared';
+import { api } from '../api/client';
 import { qk, useConfig, useMe } from '../api/queries';
 import { Logo } from '../components/Logo';
 
@@ -38,7 +40,12 @@ export function LoginPage() {
       setError(res.error.message ?? 'Something went wrong. Please try again.');
       return;
     }
-    await qc.invalidateQueries({ queryKey: qk.me });
+    const me = await qc.fetchQuery({ queryKey: qk.me, queryFn: () => api<MeResponse>('/api/me'), staleTime: 0 });
+    // SimGen is an external app: a user who chose it as their default goes there after signing in.
+    if (from === '/' && me.profile.defaultApp === 'simgen' && me.profile.allowedFrontends.includes('simgen')) {
+      window.location.assign(me.config.simgenUrl);
+      return;
+    }
     navigate(from, { replace: true });
   }
 
