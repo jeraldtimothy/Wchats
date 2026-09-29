@@ -14,8 +14,8 @@ Branch: `feat/0003-phase-3`
 - [x] tests
 
 ## feat(iam): add user management API
-- [ ] `GET /api/iam/users` (search, paging), `PATCH /api/iam/users/:id` (disabled, frontends, manager) with self-lockout guards; disabling revokes sessions
-- [ ] tests
+- [x] `GET /api/iam/users` (search, paging), `PATCH /api/iam/users/:id` (disabled, frontends, manager) with self-lockout guards; disabling revokes sessions
+- [x] tests
 
 ## feat(iam): add billing account, credit, ledger and usage API
 - [ ] accounts: list/search, create shared, detail with members, rename, disable; add/remove members (personal owner locked)

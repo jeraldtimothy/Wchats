@@ -1,5 +1,8 @@
+import { eq } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
+import { db } from '../src/db/client.js';
+import { profiles } from '../src/db/schema.js';
 import { env } from '../src/env.js';
 
 export interface TestUser {
@@ -25,4 +28,11 @@ export async function signUp(app: FastifyInstance, name = 'Test User'): Promise<
 export function cookieHeader(setCookie: string | string[] | undefined): string {
   const list = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
   return list.map((c) => c.split(';')[0]).join('; ');
+}
+
+/** Signs up a user and makes them a manager with every app. */
+export async function manager(app: FastifyInstance, name = 'Manager'): Promise<TestUser> {
+  const u = await signUp(app, name);
+  await db.update(profiles).set({ isManager: true, allowedFrontends: ['chat', 'ask', 'simgen'] }).where(eq(profiles.userId, u.id));
+  return u;
 }

@@ -10,6 +10,7 @@ import { HttpError } from './http/errors.js';
 import { createProvidersFromEnv, type ProviderRegistry } from './providers/index.js';
 import { askRoutes } from './routes/ask.js';
 import { chatRoutes } from './routes/chat.js';
+import { iamRoutes } from './routes/iam/index.js';
 import { meRoutes } from './routes/me.js';
 import { memoryRoutes } from './routes/memories.js';
 import { profileRoutes } from './routes/profile.js';
@@ -91,6 +92,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(modelRoutes);
   await app.register(chatRoutes);
   await app.register(askRoutes);
+  await app.register(iamRoutes);
   await app.register(uploadRoutes);
   await app.register(memoryRoutes);
   await app.register(profileRoutes);

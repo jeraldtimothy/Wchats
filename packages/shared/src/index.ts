@@ -7,3 +7,4 @@ export * from './attachments.js';
 export * from './memories.js';
 export * from './profile.js';
 export * from './ask.js';
+export * from './iam.js';
