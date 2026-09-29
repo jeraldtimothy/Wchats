@@ -96,6 +96,7 @@ export async function generateTitle(deps: TitleDeps, sessionId: string): Promise
           accountId: session.billingAccountId,
           userId: session.userId,
           messageId: null,
+          modelId: model.id,
           costNano: cost.costNano,
           reason: `Session title (${model.displayName})`,
         }),

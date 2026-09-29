@@ -4,9 +4,9 @@ Study: [doc/study/0003-phase-3-iam-billing-ask.md](../study/0003-phase-3-iam-bil
 Branch: `feat/0003-phase-3`
 
 ## feat(billing): record the model on usage charges
-- [ ] `ledger_entries.model_id` + migration with backfill from message → session → model
-- [ ] runner and title charges set it
-- [ ] test
+- [x] `ledger_entries.model_id` + migration with backfill from message → session → model
+- [x] runner and title charges set it
+- [x] test
 
 ## feat(ask): add Ask as one-shot hidden sessions
 - [ ] `chat_sessions.kind` (`chat` | `ask`) + migration; chat lists and routes only see `chat`

@@ -11,6 +11,7 @@ interface EntryInput {
   amountNano: bigint;
   userId?: string | null;
   messageId?: string | null;
+  modelId?: string | null;
   createdBy?: string | null;
   reason?: string | null;
   source?: string;
@@ -41,6 +42,7 @@ export async function appendEntry(tx: DbOrTx, input: EntryInput): Promise<Ledger
       balanceAfterNanoUsd: account.balance,
       userId: input.userId ?? null,
       messageId: input.messageId ?? null,
+      modelId: input.modelId ?? null,
       createdBy: input.createdBy ?? null,
       reason: input.reason ?? null,
       source: input.source ?? 'manual',
@@ -96,7 +98,14 @@ export async function grantCredit(db: DbOrTx, input: GrantInput): Promise<Ledger
 /** Records a usage charge. Call inside the transaction that also finalizes the message. */
 export async function chargeUsage(
   tx: DbOrTx,
-  input: { accountId: string; userId: string; messageId: string | null; costNano: bigint; reason?: string },
+  input: {
+    accountId: string;
+    userId: string;
+    messageId: string | null;
+    modelId?: string | null;
+    costNano: bigint;
+    reason?: string;
+  },
 ): Promise<LedgerEntry | null> {
   if (input.costNano <= 0n) return null;
   return appendEntry(tx, {
@@ -105,6 +114,7 @@ export async function chargeUsage(
     amountNano: -input.costNano,
     userId: input.userId,
     messageId: input.messageId,
+    modelId: input.modelId ?? null,
     reason: input.reason ?? null,
     source: 'usage',
   });

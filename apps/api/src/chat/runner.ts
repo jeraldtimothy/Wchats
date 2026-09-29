@@ -238,6 +238,7 @@ export class GenerationRunner {
             accountId: session.billingAccountId,
             userId: job.userId,
             messageId: job.messageId,
+            modelId: model.id,
             costNano: cost.costNano,
           })
         : null;

@@ -267,6 +267,8 @@ export const ledgerEntries = pgTable(
     balanceAfterNanoUsd: bigint('balance_after_nano_usd', { mode: 'bigint' }).notNull(),
     userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
     messageId: uuid('message_id').references(() => messages.id, { onDelete: 'set null' }),
+    /** The model behind a usage charge (replies and titles). */
+    modelId: uuid('model_id').references(() => models.id, { onDelete: 'set null' }),
     createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
     reason: text('reason'),
     source: text('source').notNull().default('manual'),
