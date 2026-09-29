@@ -313,8 +313,8 @@ function AiMemoriesCard({ enabled }: { enabled: boolean }) {
     <Card title="Generate AI Memories">
       <div className="flex items-start justify-between gap-4">
         <p className="text-sm text-lc-grey">
-          Each night, LiteChat reads chats it hasn't looked at yet and suggests memory items for you. They are
-          marked as AI-generated, and you can edit or delete them.
+          Allow the application to crawl your previous conversations with AI to generate AI-managed &quot;memories&quot;
+          that will help personalize your experience.
         </p>
         <button
           type="button"
