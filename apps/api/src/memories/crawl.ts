@@ -135,6 +135,7 @@ async function crawlUser(
     .where(
       and(
         eq(chatSessions.userId, userId),
+        eq(chatSessions.kind, 'chat'),
         isNull(chatSessions.deletedAt),
         or(isNull(chatSessions.crawledAt), gt(chatSessions.lastActivityAt, chatSessions.crawledAt)),
       ),

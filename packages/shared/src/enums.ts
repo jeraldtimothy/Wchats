@@ -10,7 +10,7 @@ export const PROVIDER_LABELS: Record<Provider, string> = {
   google: 'Google',
 };
 
-export const FRONTENDS = ['chat', 'ask', 'simgen'] as const;
+export const FRONTENDS = ['chat', 'simgen'] as const;
 export const Frontend = z.enum(FRONTENDS);
 export type Frontend = z.infer<typeof Frontend>;
 

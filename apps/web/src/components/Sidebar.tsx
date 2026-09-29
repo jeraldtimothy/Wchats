@@ -61,11 +61,6 @@ export function Sidebar({ className = '' }: { className?: string }) {
                 SimGen ↗
               </a>
             )}
-            {canUse(me, 'ask') && (
-              <NavLink to="/ask" className={navItem}>
-                Ask
-              </NavLink>
-            )}
             {chatAllowed && (
               <NavLink to="/chat" className={navItem}>
                 CHAT

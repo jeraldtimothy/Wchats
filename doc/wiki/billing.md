@@ -30,7 +30,7 @@ Sending requires that the user is a member (else 403), the account isn't disable
 
 ## What gets charged
 
-Every assistant reply with reported usage (chat and Ask, including provider errors that report usage), and every auto-title call (reason `Session title (<model>)`, no message link).
+Every assistant reply with reported usage (including provider errors that report usage), and every auto-title call (reason `Session title (<model>)`, no message link).
 
 ## Accounts
 

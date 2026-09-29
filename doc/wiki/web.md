@@ -8,20 +8,19 @@ Code: `apps/web/src`. React 19 + Vite, React Router (library mode), TanStack Que
 
 | Path | Page | Guard |
 |---|---|---|
-| `/` | redirect to `profile.defaultApp` (SimGen is external, so it falls back to chat or ask) | |
+| `/` | redirect to `profile.defaultApp` (SimGen is external, so it falls back to chat) | |
 | `/chat` | `ChatHome` (dashed "+" tile: "Start a New Conversation") | chat |
 | `/chat/:sessionId` | `ChatSessionPage` | chat |
 | `/profile` | `ProfilePage` ([profile and memories](profile-and-memories.md)) | |
-| `/ask` | `AskPage` ([Ask](ask.md)) | ask |
 | `/iam?tab=users\|billing\|models` | `routes/iam/IamPage` ([IAM and Billing](iam.md)) | manager |
 
 Guards (`routes/guards.tsx`) render the 403 page when access is missing; the API enforces the same rules.
 
-Data hooks live in `api/queries.ts` (app) and `api/iam.ts` (manager console). `useSessionStream(sessionId, {url, detailKey, onTerminal})` serves both chat and Ask. `lib/format.ts` has `formatNanoUsd` (4 decimals below a cent) and UTC date helpers.
+Data hooks live in `api/queries.ts` (app) and `api/iam.ts` (manager console). `useSessionStream(sessionId, {url?, detailKey?, onTerminal?})` follows a session's listen SSE. `lib/format.ts` has `formatNanoUsd` (4 decimals below a cent) and UTC date helpers.
 
 ## Layout
 
-`Sidebar`: logo + logout; APPS (SimGen ↗ external, Ask, CHAT, shown per `allowedFrontends`); ACCOUNT (My Profile; IAM and Billing for managers); SESSIONS ("+" opens the picker; rows show title and date, the active row has a left accent bar, and hover shows rename (inline) and delete (confirm dialog)). On phones (< 768 px) `/chat` shows the sidebar full-screen and other routes show the main area with "Back to sessions".
+`Sidebar`: logo + logout; APPS (SimGen ↗ external, CHAT, shown per `allowedFrontends`); ACCOUNT (My Profile; IAM and Billing for managers); SESSIONS ("+" opens the picker; rows show title and date, the active row has a left accent bar, and hover shows rename (inline) and delete (confirm dialog)). On phones (< 768 px) `/chat` shows the sidebar full-screen and other routes show the main area with "Back to sessions".
 
 ## Model picker (`components/ModelPicker.tsx`)
 
@@ -37,7 +36,7 @@ A native `<dialog>` titled "Select a Model", with a billing account select and i
 
 ## Errors and mobile
 
-- `routes/RouteError.tsx` is the `errorElement` for `/login`, the layout, and a pathless wrapper around the pages. A page that throws shows "Something went wrong" (Reload / Go home) while the sidebar stays. A chat or Ask answer that fails to load offers "Try again".
+- `routes/RouteError.tsx` is the `errorElement` for `/login`, the layout, and a pathless wrapper around the pages. A page that throws shows "Something went wrong" (Reload / Go home) while the sidebar stays. A chat that fails to load offers "Try again".
 - Sessions on retired models carry a "Retired" badge in the sidebar.
 - On phones (< 768 px), form controls are 16px (no iOS focus zoom), `#root` uses `100dvh`, and the composer pads for `safe-area-inset-bottom` (`viewport-fit=cover`).
 

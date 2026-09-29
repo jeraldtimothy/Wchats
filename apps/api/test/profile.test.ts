@@ -25,7 +25,7 @@ describe('profile', () => {
       globalSystemPrompt: '',
       generateAiMemories: false,
       defaultApp: 'chat',
-      allowedFrontends: ['chat', 'ask'],
+      allowedFrontends: ['chat'],
       billingAccounts: [{ name: '[Personal] GRACE HOPPER', isDisabled: false, balanceCents: 0 }],
     });
     expect(res.json().user.memberSince).toMatch(/^\d{4}-/);
@@ -33,20 +33,21 @@ describe('profile', () => {
 
   it('updates the global prompt, AI memories toggle and default app', async () => {
     const u = await signUp(app);
+    await db.update(profiles).set({ allowedFrontends: ['chat', 'simgen'] }).where(eq(profiles.userId, u.id));
     const res = await app.inject({
       method: 'PATCH',
       url: '/api/profile',
       headers: { cookie: u.cookie },
-      payload: { globalSystemPrompt: '  Reply in British English.  ', generateAiMemories: true, defaultApp: 'ask' },
+      payload: { globalSystemPrompt: '  Reply in British English.  ', generateAiMemories: true, defaultApp: 'simgen' },
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toMatchObject({
       globalSystemPrompt: 'Reply in British English.',
       generateAiMemories: true,
-      defaultApp: 'ask',
+      defaultApp: 'simgen',
     });
     const me = await app.inject({ method: 'GET', url: '/api/me', headers: { cookie: u.cookie } });
-    expect(me.json().profile.defaultApp).toBe('ask');
+    expect(me.json().profile.defaultApp).toBe('simgen');
   });
 
   it("rejects a default app the user can't use, and empty or oversized updates", async () => {
@@ -56,7 +57,7 @@ describe('profile', () => {
     expect((await patch({ defaultApp: 'simgen' })).statusCode).toBe(400);
     expect((await patch({})).statusCode).toBe(400);
     expect((await patch({ globalSystemPrompt: 'x'.repeat(10_001) })).statusCode).toBe(400);
-    await db.update(profiles).set({ allowedFrontends: ['chat', 'ask', 'simgen'] }).where(eq(profiles.userId, u.id));
+    await db.update(profiles).set({ allowedFrontends: ['chat', 'simgen'] }).where(eq(profiles.userId, u.id));
     expect((await patch({ defaultApp: 'simgen' })).statusCode).toBe(200);
   });
 });

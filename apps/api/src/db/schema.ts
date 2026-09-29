@@ -97,7 +97,7 @@ export const profiles = pgTable('profiles', {
   allowedFrontends: text('allowed_frontends')
     .array()
     .notNull()
-    .default(sql`'{chat,ask}'::text[]`),
+    .default(sql`'{chat}'::text[]`),
   isDisabled: boolean('is_disabled').notNull().default(false),
   defaultApp: text('default_app').notNull().default('chat'),
   globalSystemPrompt: text('global_system_prompt').notNull().default(''),
@@ -202,7 +202,7 @@ export const chatSessions = pgTable(
   'chat_sessions',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    /** 'ask' sessions are one-shot Ask questions; they never appear in the chat sidebar. */
+    /** Always 'chat' now. 'ask' rows are questions from the removed Ask app, kept but unreachable. */
     kind: sessionKindEnum('kind').notNull().default('chat'),
     userId: text('user_id')
       .notNull()

@@ -15,7 +15,7 @@ export function RequireManager({ children }: { children: ReactNode }) {
 /** Sends the user to their default app (SimGen is external, so it falls back to an in-app page). */
 export function DefaultAppRedirect() {
   const me = useCurrentUser();
-  const order: Frontend[] = [me.profile.defaultApp, 'chat', 'ask'];
+  const order: Frontend[] = [me.profile.defaultApp, 'chat'];
   const target = order.find((app) => app !== 'simgen' && canUse(me, app));
   return <Navigate to={target ? `/${target}` : '/profile'} replace />;
 }

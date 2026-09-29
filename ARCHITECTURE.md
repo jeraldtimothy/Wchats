@@ -61,9 +61,9 @@ One row per user, created in Better Auth's `user.create.after` hook.
 | user_id | text PK → user.id | |
 | username | text unique | derived from email local-part, de-duplicated |
 | is_manager | bool default false | gates IAM |
-| allowed_frontends | text[] default `{chat,ask}` | subset of `chat`, `ask`, `simgen` |
+| allowed_frontends | text[] default `{chat}` | subset of `chat`, `simgen` (Ask was removed, D34) |
 | is_disabled | bool default false | disabled users get 403 on every app route |
-| default_app | text default `chat` | `simgen`, `ask` or `chat` (P2 UI) |
+| default_app | text default `chat` | `simgen` or `chat` (P2 UI) |
 | global_system_prompt | text default '' | (P2 UI) |
 | generate_ai_memories | bool default false | opt-in for the nightly `crawl-memories` job (P4) |
 
@@ -113,7 +113,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | created_at | timestamptz | |
 
 ### Chat (P1)
-- **`chat_sessions`**: `id`, `kind` (`chat` | `ask`, P3), `user_id`, `model_id`, `billing_account_id`, `title` (null until generated; Ask sessions never get one), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4: last read by the AI-memory job).
+- **`chat_sessions`**: `id`, `kind` (`chat`; `ask` rows are leftovers of the removed Ask app, D34), `user_id`, `model_id`, `billing_account_id`, `title` (null until generated; Ask sessions never get one), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4: last read by the AI-memory job).
 - **`messages`**
 
 | column | type | notes |
@@ -137,7 +137,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 - **`attachments`**: `id`, `user_id`, `message_id` (null until sent; cascades with the message), `kind` (`image`/`pdf`/`text`), `mime_type`, `filename`, `size_bytes`, `storage_key`, `extracted_text` (text/office files), `truncated`, `created_at`.
 - **`memory_items`**: `id`, `user_id`, `type` (`preference`/`fact`/`reminder`/`other`), `content` (≤ 2000 chars, ≤ 200 per user), `ai_generated`, `source_session_id`, timestamps.
 
-Ask (P3) needs no table of its own: a question is a `chat_sessions` row with `kind = 'ask'`. Agent mode (`agent_runs` + `agent_run_events`) was dropped by the owner in P4; `models.agent_enabled` remains but nothing reads it.
+The Ask app (P3) stored questions as `chat_sessions` rows with `kind = 'ask'`; it was removed (D34) and those rows are unreachable. Agent mode (`agent_runs` + `agent_run_events`) was dropped by the owner in P4; `models.agent_enabled` remains but nothing reads it.
 
 pg-boss keeps its own `pgboss` schema.
 
@@ -170,7 +170,6 @@ Request and response bodies are Zod schemas in `packages/shared`.
 | `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` | P2 | owner-only download (`nosniff`, sandbox CSP); delete while unsent |
 | `GET/PATCH /api/profile` | P2 | profile card, global prompt, AI memories toggle, default app, balances |
 | `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id` | P2 | memory items |
-| `POST /api/ask`, `GET /api/ask/history`, `GET /api/ask/:id`, `GET /api/ask/:id/listen`, `DELETE /api/ask/:id` | P3 | one-shot Q&A as hidden `kind='ask'` sessions (see doc/wiki/ask.md) |
 | `GET /api/iam/users`, `PATCH /api/iam/users/:id` | P3 | search users; apps, manager flag, disable (with self-lockout guards) |
 | `GET/POST /api/iam/billing-accounts`, `GET/PATCH /api/iam/billing-accounts/:id`, `PUT/DELETE …/:id/members/:userId`, `POST …/:id/credit`, `GET …/:id/ledger(.csv)` | P3 | accounts, members, credit, ledger (keyset paging, CSV) |
 | `GET /api/iam/usage(.csv)?groupBy=user\|model&from&to&accountId` | P3 | usage reports |
@@ -326,7 +325,7 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 
 ## 10. Web app
 
-- Routes: `/login`, `/chat`, `/chat/:sessionId`, `/ask` (P3), `/profile` (P2), `/iam` (P3, managers). After login the user lands on `profile.default_app` (SimGen is external, so it falls back to `/chat`). A route whose frontend isn't allowed renders the 403 page, and the API enforces the same rule.
+- Routes: `/login`, `/chat`, `/chat/:sessionId`, `/profile` (P2), `/iam` (P3, managers). After login the user lands on `profile.default_app` (SimGen is external, so it falls back to `/chat`). A route whose frontend isn't allowed renders the 403 page, and the API enforces the same rule.
 - Layout: a 300 px white sidebar (logo + logout; APPS; ACCOUNT; SESSIONS) and the main area. Below 768 px the sidebar and chat are separate full-screen views, with "Back to sessions".
 - Data: TanStack Query for REST, plus a custom `useSessionStream(sessionId)` hook wrapping `EventSource` that feeds a small reducer. It patches the sessions list cache on `session.updated`.
 - Markdown: `marked` (GFM) → `DOMPurify.sanitize` → `highlight.js` on code blocks, plus a copy button injected per `<pre>`. Assistant HTML is only ever set from sanitized output.
@@ -373,3 +372,4 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 | D31 | The AI-memory job asks for strict JSON in the prompt and parses it tolerantly with Zod (fences and prose allowed; unknown types become `other`) | Works with every adapter unchanged; a bad reply just yields no items (study 0004). |
 | D32 | Memory crawl scope: opted-in, enabled users with personal-account credit; ≤ 20 sessions per night, oldest activity first; ≤ 5 new items; sensitive data and other people excluded; charged to the personal account | Bounded cost per user, and privacy by default. A provider failure leaves sessions uncrawled so the next run retries. |
 | D33 | Phone form controls are 16px, the app uses `100dvh`, and the composer respects `safe-area-inset-bottom` | Prevents iOS focus zoom and address-bar jumps. |
+| D34 | The Ask app is removed at the owner's request (2026-09-29); frontends are `chat` and `simgen` | It overlapped with Chat. Migration 0007 strips `ask` from users' apps and defaults; past questions stay in the DB as unreachable `kind='ask'` sessions (the enum value is kept). Supersedes D23. |

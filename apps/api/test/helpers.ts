@@ -33,6 +33,6 @@ export function cookieHeader(setCookie: string | string[] | undefined): string {
 /** Signs up a user and makes them a manager with every app. */
 export async function manager(app: FastifyInstance, name = 'Manager'): Promise<TestUser> {
   const u = await signUp(app, name);
-  await db.update(profiles).set({ isManager: true, allowedFrontends: ['chat', 'ask', 'simgen'] }).where(eq(profiles.userId, u.id));
+  await db.update(profiles).set({ isManager: true, allowedFrontends: ['chat', 'simgen'] }).where(eq(profiles.userId, u.id));
   return u;
 }

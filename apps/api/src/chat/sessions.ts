@@ -7,7 +7,6 @@ import { notFound } from '../http/errors.js';
 import { toModelSummary } from '../models/catalog.js';
 
 export type SessionRow = typeof chatSessions.$inferSelect;
-export type SessionKind = SessionRow['kind'];
 export type MessageRow = typeof messages.$inferSelect;
 
 export function toMessageDto(m: MessageRow, files: AttachmentRow[] = []): MessageDto {
@@ -43,12 +42,12 @@ function toSummary(s: SessionRow, model: typeof models.$inferSelect): SessionSum
   };
 }
 
-export async function listSessions(db: DbOrTx, userId: string, kind: SessionKind = 'chat'): Promise<SessionSummary[]> {
+export async function listSessions(db: DbOrTx, userId: string): Promise<SessionSummary[]> {
   const rows = await db
     .select({ s: chatSessions, m: models })
     .from(chatSessions)
     .innerJoin(models, eq(models.id, chatSessions.modelId))
-    .where(and(eq(chatSessions.userId, userId), eq(chatSessions.kind, kind), isNull(chatSessions.deletedAt)))
+    .where(and(eq(chatSessions.userId, userId), eq(chatSessions.kind, 'chat'), isNull(chatSessions.deletedAt)))
     .orderBy(desc(chatSessions.lastActivityAt));
   return rows.map((r) => toSummary(r.s, r.m));
 }
@@ -59,18 +58,16 @@ export async function getSessionSummary(db: DbOrTx, session: SessionRow): Promis
   return toSummary(session, model);
 }
 
-/** The session if it exists, belongs to the user and isn't deleted; otherwise 404. */
-export async function getOwnedSession(
-  db: DbOrTx,
-  userId: string,
-  sessionId: string,
-  kind: SessionKind = 'chat',
-): Promise<SessionRow> {
+/**
+ * The chat session if it exists, belongs to the user and isn't deleted;
+ * otherwise 404. (Sessions of the retired kind 'ask' are never returned.)
+ */
+export async function getOwnedSession(db: DbOrTx, userId: string, sessionId: string): Promise<SessionRow> {
   const s = await db.query.chatSessions.findFirst({
     where: and(
       eq(chatSessions.id, sessionId),
       eq(chatSessions.userId, userId),
-      eq(chatSessions.kind, kind),
+      eq(chatSessions.kind, 'chat'),
       isNull(chatSessions.deletedAt),
     ),
   });
@@ -87,13 +84,8 @@ export async function listMessages(db: DbOrTx, sessionId: string): Promise<Messa
     .orderBy(asc(messages.createdAt), asc(messages.role));
 }
 
-export async function getSessionDetail(
-  db: DbOrTx,
-  userId: string,
-  sessionId: string,
-  kind: SessionKind = 'chat',
-): Promise<SessionDetail> {
-  const s = await getOwnedSession(db, userId, sessionId, kind);
+export async function getSessionDetail(db: DbOrTx, userId: string, sessionId: string): Promise<SessionDetail> {
+  const s = await getOwnedSession(db, userId, sessionId);
   const [row] = await db
     .select({ m: models, account: billingAccounts, fav: modelFavorites.createdAt })
     .from(models)

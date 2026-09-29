@@ -22,7 +22,7 @@ const USERS = [
     password: 'admin-password-123',
     name: 'Ada Admin',
     isManager: true,
-    allowedFrontends: ['chat', 'ask', 'simgen'],
+    allowedFrontends: ['chat', 'simgen'],
     credit: '25.00',
   },
   {
@@ -30,7 +30,7 @@ const USERS = [
     password: 'user-password-123',
     name: 'Uma User',
     isManager: false,
-    allowedFrontends: ['chat', 'ask'],
+    allowedFrontends: ['chat'],
     credit: '5.00',
   },
 ] as const;

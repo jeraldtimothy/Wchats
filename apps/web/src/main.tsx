@@ -7,7 +7,6 @@ import { AppLayout } from './components/AppLayout';
 import { ToastProvider } from './components/Toast';
 import 'highlight.js/styles/github.css';
 import './index.css';
-import { AskPage } from './routes/AskPage';
 import { ChatHome } from './routes/ChatHome';
 import { ChatSessionPage } from './routes/ChatSessionPage';
 import { NotFoundPage } from './routes/ForbiddenPage';
@@ -46,14 +45,6 @@ const router = createBrowserRouter([
             element: (
               <RequireFrontend app="chat">
                 <ChatSessionPage />
-              </RequireFrontend>
-            ),
-          },
-          {
-            path: 'ask',
-            element: (
-              <RequireFrontend app="ask">
-                <AskPage />
               </RequireFrontend>
             ),
           },
