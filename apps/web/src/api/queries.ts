@@ -1,4 +1,7 @@
 import type {
+  AskBody,
+  AskHistoryItem,
+  AskResponse,
   CreateMemoryBody,
   CreateSessionBody,
   MemoryItemDto,
@@ -25,6 +28,8 @@ export const qk = {
   session: (id: string) => ['session', id] as const,
   profile: ['profile'] as const,
   memories: ['memories'] as const,
+  askHistory: ['ask', 'history'] as const,
+  ask: (id: string) => ['ask', 'detail', id] as const,
 };
 
 export function useConfig() {
@@ -207,5 +212,39 @@ export function useDeleteMemory() {
   return useMutation({
     mutationFn: (id: string) => api<void>(`/api/memories/${id}`, { method: 'DELETE' }),
     onSuccess: (_d, id) => qc.setQueryData<MemoryItemDto[]>(qk.memories, (list) => list?.filter((x) => x.id !== id)),
+  });
+}
+
+export function useAskHistory() {
+  return useQuery({
+    queryKey: qk.askHistory,
+    queryFn: () => api<{ items: AskHistoryItem[] }>('/api/ask/history').then((r) => r.items),
+  });
+}
+
+export function useAskDetail(id: string | null) {
+  return useQuery({
+    queryKey: qk.ask(id ?? ''),
+    queryFn: () => api<SessionDetail>(`/api/ask/${id}`),
+    enabled: Boolean(id),
+  });
+}
+
+export function useAsk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: AskBody) => api<AskResponse>('/api/ask', { method: 'POST', json: body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.askHistory }),
+  });
+}
+
+export function useDeleteAsk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/ask/${id}`, { method: 'DELETE' }),
+    onSuccess: (_d, id) => {
+      qc.setQueryData<AskHistoryItem[]>(qk.askHistory, (l) => l?.filter((x) => x.id !== id));
+      qc.removeQueries({ queryKey: qk.ask(id) });
+    },
   });
 }

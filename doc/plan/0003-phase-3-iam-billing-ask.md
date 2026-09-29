@@ -29,7 +29,7 @@ Branch: `feat/0003-phase-3`
 - [x] tests
 
 ## feat(web): add Ask page
-- [ ] model + account + effort + web search, streamed Markdown answer with inline errors, history list with open/delete
+- [x] model + account + effort + web search, streamed Markdown answer with inline errors, history list with open/delete
 
 ## feat(web): add IAM users tab
 - [ ] `/iam` shell with tabs; users table with search, frontends, manager, enable/disable, account assignment

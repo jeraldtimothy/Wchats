@@ -1,6 +1,6 @@
 import type { ChatStreamEvent, InflightMessage, SessionDetail, SessionSummary } from '@wchats/shared';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { qk } from '../../api/queries';
 
 export type Connection = 'connecting' | 'open' | 'reconnecting';
@@ -10,17 +10,34 @@ export type Connection = 'connecting' | 'open' | 'reconnecting';
  * in-flight reply, so a dropped connection resumes where it left off; deltas
  * are applied only if their seq is newer than what we have.
  */
-export function useSessionStream(sessionId: string) {
+export interface StreamOptions {
+  /** SSE endpoint; defaults to the chat listen URL. */
+  url?: string;
+  /** Query key of the session detail to refetch; defaults to the chat session key. */
+  detailKey?: readonly unknown[];
+  /** Called when a reply finishes (done or error). */
+  onTerminal?: () => void;
+}
+
+export function useSessionStream(sessionId: string, options: StreamOptions = {}) {
   const qc = useQueryClient();
+  const url = options.url ?? `/api/chat/v2/session/${sessionId}/listen`;
+  const detailKey = options.detailKey ?? qk.session(sessionId);
+  const detailKeyJson = JSON.stringify(detailKey);
+  const onTerminal = useRef(options.onTerminal);
+  useEffect(() => {
+    onTerminal.current = options.onTerminal;
+  });
   const [inflight, setInflight] = useState<InflightMessage | null>(null);
   const [connection, setConnection] = useState<Connection>('connecting');
   const [activity, setActivity] = useState<string | null>(null);
 
   // The caller remounts per session (key={sessionId}), so state starts fresh for each one.
   useEffect(() => {
-    const es = new EventSource(`/api/chat/v2/session/${sessionId}/listen`);
+    const es = new EventSource(url);
+    const key = JSON.parse(detailKeyJson) as unknown[];
     const refetch = () => {
-      void qc.invalidateQueries({ queryKey: qk.session(sessionId) });
+      void qc.invalidateQueries({ queryKey: key });
     };
 
     const apply = (ev: Exclude<ChatStreamEvent, { type: 'snapshot' | 'session.updated' }>) => {
@@ -71,12 +88,14 @@ export function useSessionStream(sessionId: string) {
         setInflight(null);
         setActivity(null);
         refetch();
+        onTerminal.current?.();
       },
       done: () => {
         setInflight(null);
         setActivity(null);
         refetch();
         void qc.invalidateQueries({ queryKey: qk.me });
+        onTerminal.current?.();
       },
       'session.updated': (ev) => {
         qc.setQueryData<SessionSummary[]>(qk.sessions, (list) =>
@@ -96,7 +115,7 @@ export function useSessionStream(sessionId: string) {
     }
     es.onerror = () => setConnection('reconnecting');
     return () => es.close();
-  }, [sessionId, qc]);
+  }, [sessionId, url, detailKeyJson, qc]);
 
   return { inflight, connection, activity };
 }
