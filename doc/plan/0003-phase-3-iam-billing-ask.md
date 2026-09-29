@@ -31,14 +31,11 @@ Branch: `feat/0003-phase-3`
 ## feat(web): add Ask page
 - [x] model + account + effort + web search, streamed Markdown answer with inline errors, history list with open/delete
 
-## feat(web): add IAM users tab
-- [ ] `/iam` shell with tabs; users table with search, frontends, manager, enable/disable, account assignment
-
-## feat(web): add IAM billing tab
-- [ ] accounts list + create; detail: rename, disable, credit form, members, ledger with date range, usage by user/model, CSV links
-
-## feat(web): add IAM models tab
-- [ ] catalog table with retire/agent toggles and an edit dialog
+## feat(web): add IAM and Billing page
+_Plan note: the three IAM tab commits were merged into one. The tabs share one page shell, query module and UI kit, and were built together while the shell tool was unavailable._
+- [x] `/iam` shell with tabs; users table with search, frontends, manager, enable/disable, account assignment
+- [x] accounts list + create; detail: rename, disable, credit form, members, ledger with date range, usage by user/model, CSV links
+- [x] catalog table with retire/agent toggles and an edit dialog
 
 ## Wiki
 - [ ] add iam and ask pages; update api, billing, getting-started, web, README index

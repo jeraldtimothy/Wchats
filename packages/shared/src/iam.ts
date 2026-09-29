@@ -169,7 +169,7 @@ export const PatchIamModelBody = z
     tier: Tier,
     reasoningEfforts: z.array(Effort).refine((l) => new Set(l).size === l.length, 'Duplicate effort'),
     defaultEffort: Effort.nullable(),
-    thinkingBudgets: z.record(Effort, z.number().int().min(1024).max(200_000)),
+    thinkingBudgets: z.partialRecord(Effort, z.number().int().min(1024).max(200_000)),
     maxOutputTokens: z.number().int().min(256).max(200_000),
     supportsImages: z.boolean(),
     supportsDocuments: z.boolean(),
