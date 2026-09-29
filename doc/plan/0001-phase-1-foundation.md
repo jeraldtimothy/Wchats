@@ -48,9 +48,9 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] tests: hub replay, post-message → done → charged (fake provider), insufficient credit 402
 
 ## feat(web): add app shell, auth pages and sidebar layout
-- [ ] Tailwind v4 theme from the spec's CSS variables, fonts, logo mascot
-- [ ] API client + TanStack Query, login/sign-up page (email + Google button when enabled)
-- [ ] sidebar (APPS / ACCOUNT / SESSIONS with rename + delete-confirm), role-based nav, 403 page, placeholder Ask/Profile/IAM pages, mobile collapse
+- [x] Tailwind v4 theme from the spec's CSS variables, fonts, logo mascot
+- [x] API client + TanStack Query, login/sign-up page (email + Google button when enabled)
+- [x] sidebar (APPS / ACCOUNT / SESSIONS with rename + delete-confirm), role-based nav, 403 page, placeholder Ask/Profile/IAM pages, mobile collapse
 
 ## feat(web): add model picker with cards and compact views
 - [ ] modal "Select a Model", billing account dropdown + helper text

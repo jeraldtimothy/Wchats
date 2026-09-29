@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+
+/* Design tokens (spec) */
+:root {
+  --blue: #0780b5;
+  --dark: #061820;
+  --dark-grey: #8c9fa7;
+  --light-blue: #96d2ed;
+  --light: #f4fbfe;
+  --white: #fefefe;
+  --primary-color-light: rgba(7, 127, 180, 0.1);
+  --message-user-bg: rgba(150, 210, 237, 0.5);
+  --message-assistant-bg: rgba(140, 159, 167, 0.1);
+  --border-color: rgba(140, 159, 167, 0.2);
+  --input-bg: var(--light);
+  --error-color: #ef4444;
+}
+
+/* Tailwind theme built from the tokens above: bg-lc-blue, text-lc-dark, border-lc-border, … */
+@theme inline {
+  --color-lc-blue: var(--blue);
+  --color-lc-dark: var(--dark);
+  --color-lc-grey: var(--dark-grey);
+  --color-lc-light-blue: var(--light-blue);
+  --color-lc-light: var(--light);
+  --color-lc-white: var(--white);
+  --color-lc-primary-light: var(--primary-color-light);
+  --color-lc-user-bg: var(--message-user-bg);
+  --color-lc-assistant-bg: var(--message-assistant-bg);
+  --color-lc-border: var(--border-color);
+  --color-lc-input: var(--input-bg);
+  --color-lc-error: var(--error-color);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-sm: 0 1px 2px 0 rgb(6 24 32 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(6 24 32 / 0.08), 0 2px 4px -2px rgb(6 24 32 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(6 24 32 / 0.08), 0 4px 6px -4px rgb(6 24 32 / 0.06);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-label: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--light);
+  color: var(--dark);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+@layer components {
+  .section-label {
+    font-family: var(--font-label);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dark-grey);
+  }
+
+  .focus-ring {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--blue);
+  }
+}
