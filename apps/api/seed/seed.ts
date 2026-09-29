@@ -30,7 +30,7 @@ const USERS = [
     password: 'user-password-123',
     name: 'Uma User',
     isManager: false,
-    allowedFrontends: ['chat'],
+    allowedFrontends: ['chat', 'simgen'],
     credit: '5.00',
   },
 ] as const;
