@@ -17,10 +17,10 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] env loader with Zod validation (`src/env.ts`)
 
 ## feat(auth): add Better Auth with profiles, personal accounts and guards
-- [ ] Better Auth (email/password, Google when configured), Fastify bridge on `/api/auth/*`
-- [ ] `user.create.after` hook → profile + `[Personal] <NAME>` account + membership (+ `SIGNUP_CREDIT_USD`)
-- [ ] guards `requireUser`, `requireFrontend`, `requireManager`; `GET /api/me`, `GET /api/health`
-- [ ] key/cookie redaction in logger
+- [x] Better Auth (email/password, Google when configured), Fastify bridge on `/api/auth/*`
+- [x] `user.create.after` hook → profile + `[Personal] <NAME>` account + membership (+ `SIGNUP_CREDIT_USD`)
+- [x] guards `requireUser`, `requireFrontend`, `requireManager`; `GET /api/me`, `GET /api/health`
+- [x] key/cookie redaction in logger
 
 ## feat(billing): add pricing math, ledger service and balance gate
 - [ ] `computeCostNano(usage, prices, markup)` BigInt math + tests
