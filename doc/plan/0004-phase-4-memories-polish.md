@@ -15,7 +15,7 @@ Agent mode was dropped by the owner (see the study).
 - [x] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)
 
 ## test(web): add unit tests for formatting and Markdown sanitizing
-- [ ] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases
+- [x] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases
 
 ## Wiki
 - [ ] document the memory job; update profile-and-memories, web, getting-started, index; ARCHITECTURE (agent mode dropped, decisions)
