@@ -11,7 +11,7 @@ The owner wants to use the app end to end before real provider keys are availabl
 - [x] tests: adapter events per option and trigger, title/memory formats, registry wiring, a full post-message → complete → charged flow
 
 ## feat(web): label simulation mode
-- [ ] `/api/me` `config.simulation`; a "Simulation mode" pill in the sidebar and a note in the model picker
+- [x] `/api/me` `config.simulation`; a "Simulation mode" pill in the sidebar and a note in the model picker
 
 ## Wiki
 - [ ] providers + getting-started: simulation mode, triggers, and that charges are recorded against simulated usage

@@ -112,6 +112,11 @@ function PickerBody({ onClose }: { onClose: () => void }) {
           </select>
         </label>
         <p className="mt-1 text-xs text-lc-grey">Costs for this session will be charged to the selected account.</p>
+        {me.config.simulation && (
+          <p className="mt-1 text-xs text-amber-700">
+            Simulation mode is on: every model is answered by a built-in simulator, and charges use simulated usage.
+          </p>
+        )}
         {accounts.length === 0 && (
           <p className="mt-1 text-xs text-lc-error">You have no active billing account. Ask a manager for access.</p>
         )}

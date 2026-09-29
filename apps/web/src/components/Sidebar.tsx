@@ -43,6 +43,14 @@ export function Sidebar({ className = '' }: { className?: string }) {
           <LogoutIcon />
         </button>
       </div>
+      {me.config.simulation && (
+        <div
+          className="mx-5 mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-800"
+          title="LLM_SIMULATION is on: replies come from a built-in simulator, not real models."
+        >
+          <span className="font-medium">Simulation mode</span> · replies are simulated
+        </div>
+      )}
 
       <nav className="space-y-5 px-3" aria-label="Main">
         <div>
