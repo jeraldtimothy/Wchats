@@ -1,5 +1,8 @@
 import { eq } from 'drizzle-orm';
+import { grantCredit } from '../billing/ledger.js';
+import { usdToNano } from '../billing/money.js';
 import type { DbOrTx } from '../db/client.js';
+import { env } from '../env.js';
 import { billingAccountMembers, billingAccounts, profiles } from '../db/schema.js';
 
 export function usernameBase(email: string): string {
@@ -44,6 +47,17 @@ export async function provisionUser(
       .insert(billingAccounts)
       .values({ name: personalAccountName(user.name || user.email), kind: 'personal', ownerUserId: user.id })
       .returning();
+    const signupCredit = usdToNano(env.SIGNUP_CREDIT_USD);
+    if (signupCredit > 0n) {
+      await grantCredit(db, {
+        accountId: account!.id,
+        amountNano: signupCredit,
+        reason: 'Sign-up credit',
+        userId: user.id,
+        source: 'signup',
+        externalRef: `signup:${user.id}`,
+      });
+    }
   }
   await db
     .insert(billingAccountMembers)

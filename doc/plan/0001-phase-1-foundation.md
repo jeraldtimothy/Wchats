@@ -23,10 +23,10 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] key/cookie redaction in logger
 
 ## feat(billing): add pricing math, ledger service and balance gate
-- [ ] `computeCostNano(usage, prices, markup)` BigInt math + tests
-- [ ] `grantCredit()` / `charge()` transactional ledger + cached balance; `assertCanSpend()` gate
-- [ ] integration tests against the test DB (ledger sum == cached balance; gate cases)
-- [ ] `GET /api/billing-accounts`
+- [x] `computeCostNano(usage, prices, markup)` BigInt math + tests
+- [x] `grantCredit()` / `charge()` transactional ledger + cached balance; `assertCanSpend()` gate
+- [x] integration tests against the test DB (ledger sum == cached balance; gate cases)
+- [x] `GET /api/billing-accounts`
 
 ## feat(providers): add LLM provider layer with OpenAI, Anthropic and Gemini adapters
 - [ ] `providers/types.ts` interface + registry (`isConfigured`, hidden when key missing)
