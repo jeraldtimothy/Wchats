@@ -15,7 +15,7 @@ import { HttpError, notFound } from '../http/errors.js';
 import type { ProviderRegistry } from '../providers/index.js';
 import type { ChatEventHub } from './hub.js';
 import type { GenerationRunner } from './runner.js';
-import type { MessageRow, SessionKind, SessionRow } from './sessions.js';
+import type { MessageRow, SessionRow } from './sessions.js';
 
 const HEARTBEAT_MS = 15_000;
 
@@ -41,7 +41,6 @@ export async function createSession(
   deps: Pick<SendDeps, 'db' | 'providers'>,
   userId: string,
   body: CreateSessionBody,
-  kind: SessionKind = 'chat',
 ): Promise<SessionRow> {
   const model = await usableModel(deps, body.modelId);
   const [membership] = await deps.db
@@ -55,7 +54,7 @@ export async function createSession(
   }
   const [session] = await deps.db
     .insert(chatSessions)
-    .values({ userId, modelId: model.id, billingAccountId: body.billingAccountId, kind })
+    .values({ userId, modelId: model.id, billingAccountId: body.billingAccountId })
     .returning();
   return session!;
 }
@@ -68,7 +67,7 @@ export interface SentMessages {
 
 /**
  * Validates and saves a user turn plus a pending reply, then starts
- * generation. Shared by chat post-message and Ask.
+ * generation. Used by chat post-message.
  */
 export async function postMessage(
   deps: SendDeps,

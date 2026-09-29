@@ -28,7 +28,7 @@ describe('auth + provisioning', () => {
     expect(res.statusCode).toBe(200);
     const me = res.json();
     expect(me.profile.username).toMatch(/^u-/);
-    expect(me.profile.allowedFrontends).toEqual(['chat', 'ask']);
+    expect(me.profile.allowedFrontends).toEqual(['chat']);
     expect(me.profile.isManager).toBe(false);
     expect(me.billingAccounts).toHaveLength(1);
     expect(me.billingAccounts[0]).toMatchObject({ name: '[Personal] ADA LOVELACE', kind: 'personal' });

@@ -336,7 +336,6 @@ function AiMemoriesCard({ enabled }: { enabled: boolean }) {
 
 const APPS: { id: Frontend; label: string }[] = [
   { id: 'simgen', label: 'SimGen' },
-  { id: 'ask', label: 'Ask' },
   { id: 'chat', label: 'Chat' },
 ];
 

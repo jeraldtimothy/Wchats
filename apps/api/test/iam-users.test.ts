@@ -35,7 +35,7 @@ describe('IAM users', () => {
       name: 'Zelda Searchable',
       isManager: false,
       isDisabled: false,
-      allowedFrontends: ['chat', 'ask'],
+      allowedFrontends: ['chat'],
       accounts: [{ name: '[Personal] ZELDA SEARCHABLE', kind: 'personal' }],
     });
     // LIKE wildcards in the query are matched literally.
@@ -46,11 +46,11 @@ describe('IAM users', () => {
   it('changes apps and manager access, keeping the default app valid', async () => {
     const m = await manager(app);
     const t = await signUp(app);
-    const res = await patch(m.cookie, t.id, { allowedFrontends: ['ask', 'simgen'], isManager: true });
+    const res = await patch(m.cookie, t.id, { allowedFrontends: ['simgen'], isManager: true });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ allowedFrontends: ['ask', 'simgen'], isManager: true });
+    expect(res.json()).toMatchObject({ allowedFrontends: ['simgen'], isManager: true });
     const me = await app.inject({ method: 'GET', url: '/api/me', headers: { cookie: t.cookie } });
-    expect(me.json().profile.defaultApp).toBe('ask');
+    expect(me.json().profile.defaultApp).toBe('simgen');
   });
 
   it('disables a user and signs them out; they can be re-enabled', async () => {

@@ -8,7 +8,7 @@ import type { InlineTitleQueue } from '../src/chat/titles.js';
 import { grantCredit, ledgerSum } from '../src/billing/ledger.js';
 import { computeCost } from '../src/billing/pricing.js';
 import { db } from '../src/db/client.js';
-import { billingAccounts, ledgerEntries, messages, models, profiles } from '../src/db/schema.js';
+import { billingAccounts, chatSessions, ledgerEntries, messages, models, profiles } from '../src/db/schema.js';
 import { upsertModels } from '../src/models/catalog.js';
 import type { ProviderEvent } from '../src/providers/types.js';
 import { fakeRegistry } from './fakes.js';
@@ -134,9 +134,23 @@ describe('sessions', () => {
     expect(steal.statusCode).toBe(403);
   });
 
+  it('keeps questions from the removed Ask app out of chat, and the Ask API is gone', async () => {
+    const u = await fundedUser();
+    const [legacy] = await db
+      .insert(chatSessions)
+      .values({ userId: u.id, modelId: await modelId('gpt-5.6-luna'), billingAccountId: u.accountId, kind: 'ask' })
+      .returning();
+    const list = await app.inject({ method: 'GET', url: '/api/chat/v2/sessions', headers: { cookie: u.cookie } });
+    expect(list.json().sessions).toEqual([]);
+    const open = await app.inject({ method: 'GET', url: `/api/chat/v2/session/${legacy!.id}`, headers: { cookie: u.cookie } });
+    expect(open.statusCode).toBe(404);
+    const ask = await app.inject({ method: 'GET', url: '/api/ask/history', headers: { cookie: u.cookie } });
+    expect(ask.statusCode).toBe(404);
+  });
+
   it('returns 403 when the chat frontend is not allowed', async () => {
     const u = await fundedUser();
-    await db.update(profiles).set({ allowedFrontends: ['ask'] }).where(eq(profiles.userId, u.id));
+    await db.update(profiles).set({ allowedFrontends: ['simgen'] }).where(eq(profiles.userId, u.id));
     const res = await app.inject({ method: 'GET', url: '/api/chat/v2/sessions', headers: { cookie: u.cookie } });
     expect(res.statusCode).toBe(403);
   });

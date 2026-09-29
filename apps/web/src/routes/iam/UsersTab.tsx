@@ -8,7 +8,7 @@ import { useCurrentUser } from '../../lib/me';
 import { useDebounced } from '../../lib/useDebounced';
 import { Badge, Panel, Switch, inputClass, secondaryButton } from './ui';
 
-const APP_LABELS: Record<Frontend, string> = { chat: 'Chat', ask: 'Ask', simgen: 'SimGen' };
+const APP_LABELS: Record<Frontend, string> = { chat: 'Chat', simgen: 'SimGen' };
 
 export function UsersTab() {
   const [query, setQuery] = useState('');
