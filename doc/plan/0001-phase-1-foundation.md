@@ -12,9 +12,9 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] CLAUDE.md health check: `pnpm check`
 
 ## feat(db): add Drizzle schema and initial migration
-- [ ] `apps/api/src/db/schema.ts`: Better Auth tables, profiles, models, model_favorites, billing_accounts, billing_account_members, ledger_entries, chat_sessions, messages
-- [ ] `drizzle.config.ts`, generated migration in `apps/api/drizzle/`, `pnpm db:migrate`
-- [ ] env loader with Zod validation (`src/env.ts`)
+- [x] `apps/api/src/db/schema.ts`: Better Auth tables, profiles, models, model_favorites, billing_accounts, billing_account_members, ledger_entries, chat_sessions, messages
+- [x] `drizzle.config.ts`, generated migration in `apps/api/drizzle/`, `pnpm db:migrate`
+- [x] env loader with Zod validation (`src/env.ts`)
 
 ## feat(auth): add Better Auth with profiles, personal accounts and guards
 - [ ] Better Auth (email/password, Google when configured), Fastify bridge on `/api/auth/*`
