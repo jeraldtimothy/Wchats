@@ -40,12 +40,12 @@ Branch: `feat/0001-phase-1-foundation`
 - [x] `pnpm check-models` script (moved here from the providers commit: it validates the ids in the seed config, which lands in this commit)
 
 ## feat(chat): add sessions, post-message generation and listen SSE
-- [ ] sessions CRUD routes (soft delete), retired-model 409
-- [ ] system prompt assembly (base + global prompt + date)
-- [ ] `ChatEventHub` (in-memory, atomic snapshot/subscribe) + `GenerationRunner` (flush, charge, orphan recovery)
-- [ ] `post-message` with gate / busy checks; `listen` SSE with snapshot replay + heartbeats
-- [ ] pg-boss boot + `generate-title` job → `session.updated`
-- [ ] tests: hub replay, post-message → done → charged (fake provider), insufficient credit 402
+- [x] sessions CRUD routes (soft delete), retired-model 409
+- [x] system prompt assembly (base + global prompt + date)
+- [x] `ChatEventHub` (in-memory, atomic snapshot/subscribe) + `GenerationRunner` (flush, charge, orphan recovery)
+- [x] `post-message` with gate / busy checks; `listen` SSE with snapshot replay + heartbeats
+- [x] pg-boss boot + `generate-title` job → `session.updated`
+- [x] tests: hub replay, post-message → done → charged (fake provider), insufficient credit 402
 
 ## feat(web): add app shell, auth pages and sidebar layout
 - [ ] Tailwind v4 theme from the spec's CSS variables, fonts, logo mascot

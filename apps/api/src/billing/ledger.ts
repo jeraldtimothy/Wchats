@@ -1,4 +1,4 @@
-import type { LedgerKind } from '@wchats/shared';
+import { CHAT_ERROR_TEXT, type LedgerKind } from '@wchats/shared';
 import { and, eq, sql } from 'drizzle-orm';
 import type { DbOrTx } from '../db/client.js';
 import { billingAccountMembers, billingAccounts, ledgerEntries } from '../db/schema.js';
@@ -129,11 +129,7 @@ export async function assertCanSpend(db: DbOrTx, accountId: string, userId: stri
     throw new HttpError(403, 'billing_account_disabled', 'This billing account is disabled.');
   }
   if (row.account.balanceNanoUsd <= 0n) {
-    throw new HttpError(
-      402,
-      'insufficient_credit',
-      'This billing account has no credit left. Ask a manager to add credit, or pick another account.',
-    );
+    throw new HttpError(402, 'insufficient_credit', CHAT_ERROR_TEXT.insufficientCredit);
   }
 }
 

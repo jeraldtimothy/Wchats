@@ -16,6 +16,9 @@ export class FakeProvider implements LLMProvider {
     };
   };
 
+  /** Text returned for session-title requests (recognised by their system prompt). */
+  titleText = 'Test title.';
+
   constructor(
     readonly id: Provider,
     private readonly configured = true,
@@ -27,7 +30,18 @@ export class FakeProvider implements LLMProvider {
 
   streamChat(req: ChatRequest): AsyncIterable<ProviderEvent> {
     this.requests.push(req);
+    if (req.system.startsWith('You write short titles')) return this.title();
     return this.script(req);
+  }
+
+  private async *title(): AsyncGenerator<ProviderEvent> {
+    yield { type: 'text.delta', text: this.titleText };
+    yield {
+      type: 'done',
+      stopReason: 'complete',
+      usage: { inputTokens: 40, cachedInputTokens: 0, outputTokens: 5, reasoningTokens: 0, webSearches: 0 },
+      rawUsage: {},
+    };
   }
 
   async listModels(): Promise<string[]> {
