@@ -15,3 +15,18 @@ export function usdToNano(usd: string): bigint {
   const frac = BigInt((m[2] ?? '').padEnd(9, '0'));
   return whole * NANO_PER_USD + frac;
 }
+
+/** Exact decimal USD string with 9 places, e.g. -1234567n → "-0.001234567". */
+export function nanoToUsd(nano: bigint): string {
+  const neg = nano < 0n;
+  const abs = neg ? -nano : nano;
+  const whole = abs / NANO_PER_USD;
+  const frac = (abs % NANO_PER_USD).toString().padStart(9, '0');
+  return `${neg ? '-' : ''}${whole}.${frac}`;
+}
+
+/** Parses signed USD with up to 9 decimals ("-12.5") into nano-USD. */
+export function signedUsdToNano(usd: string): bigint {
+  const t = usd.trim();
+  return t.startsWith('-') ? -usdToNano(t.slice(1)) : usdToNano(t);
+}

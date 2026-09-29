@@ -18,10 +18,10 @@ Branch: `feat/0003-phase-3`
 - [x] tests
 
 ## feat(iam): add billing account, credit, ledger and usage API
-- [ ] accounts: list/search, create shared, detail with members, rename, disable; add/remove members (personal owner locked)
-- [ ] credit: grant/adjust with reason (USD input)
-- [ ] ledger (date range, paging) and usage by user / by model; CSV for both with safe quoting
-- [ ] tests
+- [x] accounts: list/search, create shared, detail with members, rename, disable; add/remove members (personal owner locked)
+- [x] credit: grant/adjust with reason (USD input)
+- [x] ledger (date range, paging) and usage by user / by model; CSV for both with safe quoting
+- [x] tests
 
 ## feat(iam): add model catalog editing
 - [ ] `GET /api/iam/models`, `PATCH /api/iam/models/:id` (validated fields, prices, retire, agent) setting `edited_at` (+ migration)
