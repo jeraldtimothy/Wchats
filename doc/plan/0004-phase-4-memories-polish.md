@@ -6,20 +6,21 @@ Branch: `feat/0004-phase-4`
 Agent mode was dropped by the owner (see the study).
 
 ## feat(memories): generate AI memory items nightly
-- [ ] `chat_sessions.crawled_at` + migration
-- [ ] `crawlMemories()`: opted-in users, uncrawled/updated sessions, cheapest model, strict JSON parse, dedupe against existing, cap, charge, mark crawled
-- [ ] pg-boss cron `crawl-memories` (02:30) + `pnpm memories:run`
-- [ ] tests (fake provider): items inserted as AI-generated, sessions marked, opt-out/zero-credit skipped, bad JSON tolerated, provider errors retried, recrawl only after new activity
+- [x] `chat_sessions.crawled_at` + migration
+- [x] `crawlMemories()`: opted-in users, uncrawled/updated sessions, cheapest model, strict JSON parse, dedupe against existing, cap, charge, mark crawled
+- [x] pg-boss cron `crawl-memories` (02:30) + `pnpm memories:run`
+- [x] tests (fake provider): items inserted as AI-generated, sessions marked, opt-out/zero-credit skipped, bad JSON tolerated, provider errors retried, recrawl only after new activity
 
 ## fix(web): polish error states, retired sessions and mobile
-- [ ] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)
+- [x] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)
 
 ## test(web): add unit tests for formatting and Markdown sanitizing
-- [ ] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases
+- [x] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases
 
 ## Wiki
-- [ ] document the memory job; update profile-and-memories, web, getting-started, index; ARCHITECTURE (agent mode dropped, decisions)
+- [x] document the memory job; update profile-and-memories, web, getting-started, index; ARCHITECTURE (agent mode dropped, decisions)
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] smoke: `pnpm memories:run` against the mock provider creates items for an opted-in user
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] smoke: `pnpm memories:run` against the mock provider creates items for an opted-in user
+  - Note: the first run crawled 3 sessions, added 1 AI-generated item with its source session, and charged 'AI memories'; an immediate rerun found nothing new.

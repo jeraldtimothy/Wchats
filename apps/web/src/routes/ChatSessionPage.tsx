@@ -24,8 +24,13 @@ function ChatSession({ sessionId }: { sessionId: string }) {
   if (session.error instanceof ApiError && session.error.status === 404) return <NotFoundPage />;
   if (!session.data) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-lc-grey">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-sm text-lc-grey">
         {session.isError ? 'Could not load this chat.' : 'Loading…'}
+        {session.isError && (
+          <button type="button" onClick={() => session.refetch()} className="focus-ring text-lc-blue underline">
+            Try again
+          </button>
+        )}
       </div>
     );
   }

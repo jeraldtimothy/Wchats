@@ -35,6 +35,16 @@ A native `<dialog>` titled "Select a Model", with a billing account select and i
 - `Composer`: model pill, Include Memories switch (saved on the session), Tools popover (Web Search; "Allow multiple turns" with its hint when the model supports it), thinking-effort select (only if the model has efforts); paperclip, paste and drag-and-drop attachments with upload chips ([attachments](attachments.md)); Enter sends, Shift+Enter adds a newline; files-only messages are allowed.
 - A retired model shows the banner with "Start a new chat" and hides the composer.
 
+## Errors and mobile
+
+- `routes/RouteError.tsx` is the `errorElement` for `/login`, the layout, and a pathless wrapper around the pages. A page that throws shows "Something went wrong" (Reload / Go home) while the sidebar stays. A chat or Ask answer that fails to load offers "Try again".
+- Sessions on retired models carry a "Retired" badge in the sidebar.
+- On phones (< 768 px), form controls are 16px (no iOS focus zoom), `#root` uses `100dvh`, and the composer pads for `safe-area-inset-bottom` (`viewport-fit=cover`).
+
+## Tests
+
+`apps/web` runs Vitest with jsdom (`src/**/*.test.ts`): `lib/format.test.ts` (exact nano-USD formatting) and `lib/markdown.test.ts` (GFM, code blocks, raw HTML escaped, `javascript:`/`data:` URLs stripped, safe links).
+
 ## Theme
 
 `index.css` defines the spec's CSS variables and maps them to Tailwind tokens (`bg-lc-blue`, `text-lc-dark`, `border-lc-border`, `bg-lc-user-bg`, …), radii 4/8/12, soft shadows, and the fonts (Fredoka for display, Inter for body, Helvetica Neue in `.section-label`).

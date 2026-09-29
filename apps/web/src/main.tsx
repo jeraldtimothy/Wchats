@@ -14,6 +14,7 @@ import { NotFoundPage } from './routes/ForbiddenPage';
 import { DefaultAppRedirect, RequireFrontend, RequireManager } from './routes/guards';
 import { IamPage } from './routes/iam/IamPage';
 import { LoginPage } from './routes/LoginPage';
+import { RouteError } from './routes/RouteError';
 import { ProfilePage } from './routes/ProfilePage';
 
 const queryClient = new QueryClient({
@@ -21,46 +22,53 @@ const queryClient = new QueryClient({
 });
 
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   {
     path: '/',
     element: <AppLayout />,
+    errorElement: <RouteError />,
     children: [
-      { index: true, element: <DefaultAppRedirect /> },
       {
-        path: 'chat',
-        element: (
-          <RequireFrontend app="chat">
-            <ChatHome />
-          </RequireFrontend>
-        ),
+        // Errors inside a page keep the sidebar; errors in the layout itself use the outer boundary.
+        errorElement: <RouteError />,
+        children: [
+          { index: true, element: <DefaultAppRedirect /> },
+          {
+            path: 'chat',
+            element: (
+              <RequireFrontend app="chat">
+                <ChatHome />
+              </RequireFrontend>
+            ),
+          },
+          {
+            path: 'chat/:sessionId',
+            element: (
+              <RequireFrontend app="chat">
+                <ChatSessionPage />
+              </RequireFrontend>
+            ),
+          },
+          {
+            path: 'ask',
+            element: (
+              <RequireFrontend app="ask">
+                <AskPage />
+              </RequireFrontend>
+            ),
+          },
+          { path: 'profile', element: <ProfilePage /> },
+          {
+            path: 'iam',
+            element: (
+              <RequireManager>
+                <IamPage />
+              </RequireManager>
+            ),
+          },
+          { path: '*', element: <NotFoundPage /> },
+        ],
       },
-      {
-        path: 'chat/:sessionId',
-        element: (
-          <RequireFrontend app="chat">
-            <ChatSessionPage />
-          </RequireFrontend>
-        ),
-      },
-      {
-        path: 'ask',
-        element: (
-          <RequireFrontend app="ask">
-            <AskPage />
-          </RequireFrontend>
-        ),
-      },
-      { path: 'profile', element: <ProfilePage /> },
-      {
-        path: 'iam',
-        element: (
-          <RequireManager>
-            <IamPage />
-          </RequireManager>
-        ),
-      },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ]);

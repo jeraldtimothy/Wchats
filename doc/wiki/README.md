@@ -17,4 +17,4 @@ The living manual of the codebase. Every page here describes the code as it is o
 
 ## Status
 
-Phases 1–3 are built. Phase 4 (AI memory generation, agent mode, polish) is not; see ARCHITECTURE.md.
+Phases 1–4 are built. Agent mode was dropped by the owner (ARCHITECTURE D30).

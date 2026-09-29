@@ -69,7 +69,7 @@ export function Composer({
   const showTools = model.webSearchEnabled || model.supportsMultiTurnTools;
 
   return (
-    <div className="border-t border-lc-border bg-lc-white px-4 pt-2 pb-4 md:px-8">
+    <div className="border-t border-lc-border bg-lc-white px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-8">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-wrap items-center gap-2 pb-2">
           <span className="section-label rounded-full bg-lc-primary-light px-2.5 py-1 !text-lc-blue" title="Model for this chat">

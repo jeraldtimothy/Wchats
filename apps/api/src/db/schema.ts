@@ -218,6 +218,8 @@ export const chatSessions = pgTable(
     createdAt: createdAt(),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    /** When the nightly AI-memory job last read this session; it re-reads only after new activity. */
+    crawledAt: timestamp('crawled_at', { withTimezone: true }),
   },
   (t) => [index('chat_sessions_user_activity_idx').on(t.userId, t.kind, t.lastActivityAt)],
 );
