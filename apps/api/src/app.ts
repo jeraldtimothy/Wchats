@@ -10,6 +10,7 @@ import { HttpError } from './http/errors.js';
 import { createProvidersFromEnv, type ProviderRegistry } from './providers/index.js';
 import { chatRoutes } from './routes/chat.js';
 import { meRoutes } from './routes/me.js';
+import { memoryRoutes } from './routes/memories.js';
 import { uploadRoutes } from './routes/uploads.js';
 import { LocalDiskStorage, type Storage } from './storage/index.js';
 import { modelRoutes } from './routes/models.js';
@@ -88,5 +89,6 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(modelRoutes);
   await app.register(chatRoutes);
   await app.register(uploadRoutes);
+  await app.register(memoryRoutes);
   return app;
 }

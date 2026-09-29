@@ -19,10 +19,10 @@ Branch: `feat/0002-phase-2`
 - [x] tests: attachments reach the provider request, model gating, files-only prompt, sources persisted
 
 ## feat(memories): add memory items and Include Memories
-- [ ] `memory_items` table + migration
-- [ ] `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id`
-- [ ] runner adds memories to the system prompt when the session's Include Memories is on
-- [ ] tests: CRUD + ownership, prompt includes memories only when enabled
+- [x] `memory_items` table + migration
+- [x] `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id`
+- [x] runner adds memories to the system prompt when the session's Include Memories is on
+- [x] tests: CRUD + ownership, prompt includes memories only when enabled
 
 ## feat(profile): add profile endpoints
 - [ ] `GET /api/profile`, `PATCH /api/profile` (global system prompt, generate AI memories, default app ∈ allowed frontends)

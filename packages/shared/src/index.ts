@@ -4,3 +4,4 @@ export * from './me.js';
 export * from './models.js';
 export * from './chat.js';
 export * from './attachments.js';
+export * from './memories.js';

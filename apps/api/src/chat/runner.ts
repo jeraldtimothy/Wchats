@@ -10,6 +10,7 @@ import type { ProviderRegistry } from '../providers/index.js';
 import type { ChatMessage, ChatRequest, ContentPart, ProviderEvent, StopReason } from '../providers/types.js';
 import type { Storage } from '../storage/index.js';
 import type { ChatEventHub } from './hub.js';
+import { memoriesForPrompt } from '../memories/service.js';
 import { buildSystemPrompt } from './prompts.js';
 import { listMessages, type MessageRow } from './sessions.js';
 
@@ -143,7 +144,10 @@ export class GenerationRunner {
 
     const request: ChatRequest = {
       model: model.providerModelId,
-      system: buildSystemPrompt({ globalSystemPrompt: profile?.globalSystemPrompt }),
+      system: buildSystemPrompt({
+        globalSystemPrompt: profile?.globalSystemPrompt,
+        memories: session.includeMemories ? await memoriesForPrompt(db, job.userId) : [],
+      }),
       messages: historyToTurns(prior, files, blobs),
       effort: options.effort ?? undefined,
       thinkingBudgets: model.thinkingBudgets as ChatRequest['thinkingBudgets'],
