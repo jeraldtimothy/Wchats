@@ -12,7 +12,7 @@ Agent mode was dropped by the owner (see the study).
 - [x] tests (fake provider): items inserted as AI-generated, sessions marked, opt-out/zero-credit skipped, bad JSON tolerated, provider errors retried, recrawl only after new activity
 
 ## fix(web): polish error states, retired sessions and mobile
-- [ ] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)
+- [x] route error boundary; "Retired" badge on session rows; interrupted-reply text; mobile tweaks (dialogs, composer bar)
 
 ## test(web): add unit tests for formatting and Markdown sanitizing
 - [ ] Vitest + jsdom in apps/web; `formatNanoUsd`, `renderMarkdown` XSS cases

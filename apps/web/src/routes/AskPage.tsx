@@ -242,7 +242,16 @@ function AskAnswer({ id }: { id: string }) {
     onTerminal: () => void qc.invalidateQueries({ queryKey: qk.askHistory }),
   });
   if (!detail.data) {
-    return <p className="m-auto p-6 text-sm text-lc-grey">{detail.isError ? 'Could not load this answer.' : 'Loading…'}</p>;
+    return (
+      <div className="m-auto flex flex-col items-center gap-2 p-6 text-sm text-lc-grey">
+        {detail.isError ? 'Could not load this answer.' : 'Loading…'}
+        {detail.isError && (
+          <button type="button" onClick={() => detail.refetch()} className="focus-ring text-lc-blue underline">
+            Try again
+          </button>
+        )}
+      </div>
+    );
   }
   return <MessageList messages={detail.data.messages} inflight={inflight} activity={activity} localError={null} />;
 }

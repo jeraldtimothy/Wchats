@@ -190,6 +190,7 @@ function SessionRow({ session, active, onDelete }: { session: SessionSummary; ac
           <div className={`truncate text-sm ${active ? 'font-medium text-lc-dark' : 'text-lc-dark'}`}>{title}</div>
           <div className="mt-0.5 truncate text-xs text-lc-grey">
             {formatSessionDate(session.lastActivityAt)}
+            {session.isRetired && <span className="ml-1.5 rounded-sm bg-lc-assistant-bg px-1 text-[10px] uppercase">Retired</span>}
           </div>
         </NavLink>
       )}
