@@ -57,8 +57,8 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   const hub = options.hub ?? new InMemoryChatEventHub();
   const log = { error: (obj: unknown, msg?: string) => app.log.error(obj, msg) };
   const titles = options.titles ?? new InlineTitleQueue({ db, hub, providers, markup: env.MARKUP }, log);
-  const runner = new GenerationRunner({ db, hub, providers, titles, markup: env.MARKUP, log });
   const storage = options.storage ?? new LocalDiskStorage(env.STORAGE_DIR);
+  const runner = new GenerationRunner({ db, hub, providers, titles, storage, markup: env.MARKUP, log });
   app.decorate('providers', providers);
   app.decorate('storage', storage);
   app.decorate('chat', { hub, runner, titles });

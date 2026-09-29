@@ -87,7 +87,7 @@ export class OpenAIProvider implements LLMProvider {
           store: false,
           max_output_tokens: req.maxOutputTokens,
           ...(req.effort ? { reasoning: { effort: req.effort } } : {}),
-          ...(tools.length ? { tools } : {}),
+          ...(tools.length ? { tools, include: ['web_search_call.action.sources' as const] } : {}),
         },
         { signal: req.signal },
       );

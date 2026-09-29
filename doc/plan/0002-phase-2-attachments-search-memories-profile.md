@@ -12,11 +12,11 @@ Branch: `feat/0002-phase-2`
 - [x] tests: sniffing, extraction per format (fixtures built in-test), zip-bomb limit, upload routes and ownership
 
 ## feat(chat): send attachments and web search options with messages
-- [ ] `post-message` accepts `attachmentIds` (owned, unlinked, allowed for the model), links them; files-only messages allowed
-- [ ] runner builds image/PDF/text parts for every turn with attachments; files-only placeholder prompt
-- [ ] message DTOs carry attachments
-- [ ] OpenAI adapter requests `web_search_call.action.sources` when searching
-- [ ] tests: attachments reach the provider request, model gating, files-only prompt, sources persisted
+- [x] `post-message` accepts `attachmentIds` (owned, unlinked, allowed for the model), links them; files-only messages allowed
+- [x] runner builds image/PDF/text parts for every turn with attachments; files-only placeholder prompt
+- [x] message DTOs carry attachments
+- [x] OpenAI adapter requests `web_search_call.action.sources` when searching
+- [x] tests: attachments reach the provider request, model gating, files-only prompt, sources persisted
 
 ## feat(memories): add memory items and Include Memories
 - [ ] `memory_items` table + migration

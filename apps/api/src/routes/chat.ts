@@ -1,5 +1,6 @@
 import {
   CreateSessionBody,
+  MAX_ATTACHMENTS_PER_MESSAGE,
   PatchSessionBody,
   PostMessageBody,
   type ChatStreamEvent,
@@ -7,14 +8,14 @@ import {
   type PostMessageResponse,
   type SessionSummary,
 } from '@wchats/shared';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getAuth, requireFrontend, requireUser } from '../auth/guards.js';
 import { assertCanSpend } from '../billing/ledger.js';
 import { getOwnedSession, getSessionDetail, listSessions, toMessageDto } from '../chat/sessions.js';
 import { db } from '../db/client.js';
-import { billingAccountMembers, billingAccounts, chatSessions, messages, models } from '../db/schema.js';
+import { attachments, billingAccountMembers, billingAccounts, chatSessions, messages, models } from '../db/schema.js';
 import { HttpError, notFound } from '../http/errors.js';
 import { parse } from '../http/validate.js';
 
@@ -89,9 +90,29 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
     if (!app.providers.isConfigured(model.provider)) {
       throw new HttpError(409, 'model_unavailable', 'This model is not available right now.');
     }
-    if (body.attachmentIds?.length) throw new HttpError(400, 'validation', 'Attachments are not supported yet.');
     const text = body.text.trim();
-    if (!text) throw new HttpError(400, 'validation', 'Type a message first.');
+    const attachmentIds = [...new Set(body.attachmentIds ?? [])];
+    if (attachmentIds.length > MAX_ATTACHMENTS_PER_MESSAGE) {
+      throw new HttpError(400, 'validation', `Attach at most ${MAX_ATTACHMENTS_PER_MESSAGE} files per message.`);
+    }
+    const files = attachmentIds.length
+      ? await db
+          .select()
+          .from(attachments)
+          .where(and(inArray(attachments.id, attachmentIds), eq(attachments.userId, user.id), isNull(attachments.messageId)))
+      : [];
+    if (files.length !== attachmentIds.length) {
+      throw new HttpError(400, 'validation', 'One or more files are no longer available. Remove them and attach again.');
+    }
+    for (const f of files) {
+      if (f.kind === 'image' && !model.supportsImages) {
+        throw new HttpError(400, 'validation', `${model.displayName} can't read images ("${f.filename}").`);
+      }
+      if (f.kind === 'pdf' && !model.supportsDocuments) {
+        throw new HttpError(400, 'validation', `${model.displayName} can't read PDFs ("${f.filename}").`);
+      }
+    }
+    if (!text && files.length === 0) throw new HttpError(400, 'validation', 'Type a message first.');
 
     const efforts = model.reasoningEfforts as Effort[];
     let effort: Effort | null = null;
@@ -123,11 +144,25 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
           role: 'user',
           status: 'complete',
           content: text,
-          options: { effort, webSearch: body.webSearch ?? false, multiTurn: body.multiTurn ?? false },
+          options: {
+            effort,
+            webSearch: Boolean(body.webSearch) && model.webSearchEnabled,
+            multiTurn: Boolean(body.multiTurn) && model.supportsMultiTurnTools,
+          },
           createdAt: new Date(now),
           completedAt: new Date(now),
         })
         .returning();
+      if (attachmentIds.length) {
+        const linked = await tx
+          .update(attachments)
+          .set({ messageId: u!.id })
+          .where(and(inArray(attachments.id, attachmentIds), isNull(attachments.messageId)))
+          .returning({ id: attachments.id });
+        if (linked.length !== attachmentIds.length) {
+          throw new HttpError(409, 'validation', 'One or more files were already sent. Attach them again.');
+        }
+      }
       const [a] = await tx
         .insert(messages)
         .values({ sessionId: id, role: 'assistant', status: 'pending', createdAt: new Date(now + 1) })
@@ -138,7 +173,7 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
 
     app.chat.runner.start({ sessionId: id, messageId: assistantMessage.id, userId: user.id });
     reply.status(202);
-    return { userMessage: toMessageDto(userMessage), assistantMessage: toMessageDto(assistantMessage) };
+    return { userMessage: toMessageDto(userMessage, files), assistantMessage: toMessageDto(assistantMessage) };
   });
 
   /**

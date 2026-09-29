@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AttachmentDto } from './attachments.js';
 import { Effort, MessageStatus, Provider } from './enums.js';
 import { ModelSummary } from './models.js';
 
@@ -24,7 +25,9 @@ export const MessageDto = z.object({
   status: MessageStatus,
   content: z.string(),
   sources: z.array(Source),
+  attachments: z.array(AttachmentDto),
   effort: Effort.nullable(),
+  webSearch: z.boolean(),
   errorCode: z.string().nullable(),
   errorMessage: z.string().nullable(),
   /** Charge for this reply in nano-USD, as a decimal string (assistant messages). */
