@@ -38,8 +38,9 @@ _Plan note: the three IAM tab commits were merged into one. The tabs share one p
 - [x] catalog table with retire/agent toggles and an edit dialog
 
 ## Wiki
-- [ ] add iam and ask pages; update api, billing, getting-started, web, README index
+- [x] add iam and ask pages; update api, billing, getting-started, web, README index
 
 ## Done when
-- [ ] `pnpm check` passes on the branch and on `main`
-- [ ] smoke: Ask streams through the proxy against the mock provider; a manager grants credit, exports CSV
+- [x] `pnpm check` passes on the branch and on `main`
+- [x] smoke: Ask streams through the proxy against the mock provider; a manager grants credit, exports CSV
+  - Note: Ask replayed a partial reply on a late subscribe, landed in Ask history only, and was charged to the shared account; the user got 403 on IAM; the admin's grant recorded `created_by`; usage-by-model and the ledger CSV matched. Browser UI not checked visually (Chrome extension can't reach localhost).

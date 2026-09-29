@@ -86,6 +86,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | input_usd_per_mtok, cached_input_usd_per_mtok, output_usd_per_mtok, web_search_usd_per_call | numeric(12,6) |
 | is_retired, agent_enabled | bool |
 | sort_order | int |
+| edited_at | timestamptz null (P3): set by IAM edits; `pnpm seed` skips such rows unless `--force-models` |
 | created_at, updated_at | timestamptz |
 
 `model_favorites (user_id, model_id, created_at)` has PK `(user_id, model_id)`.
@@ -104,6 +105,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | balance_after_nano_usd | bigint | balance snapshot, for easy statements |
 | user_id | text null | whose usage / who received it |
 | message_id | uuid null FK → messages | for usage charges |
+| model_id | uuid null FK → models | (P3) model behind a usage charge (replies and titles), for per-model reports |
 | created_by | text null | manager who granted/adjusted |
 | reason | text null | required for grants/adjustments |
 | source | text default `manual` | `manual`, `usage`, `seed`, later `stripe` |
@@ -111,7 +113,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 | created_at | timestamptz | |
 
 ### Chat (P1)
-- **`chat_sessions`**: `id`, `user_id`, `model_id`, `billing_account_id`, `title` (null until generated), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4).
+- **`chat_sessions`**: `id`, `kind` (`chat` | `ask`, P3), `user_id`, `model_id`, `billing_account_id`, `title` (null until generated; Ask sessions never get one), `include_memories bool`, `created_at`, `last_activity_at`, `deleted_at` (soft delete), `crawled_at` (P4).
 - **`messages`**
 
 | column | type | notes |
@@ -135,7 +137,7 @@ Seeded from `apps/api/seed/models.config.ts` and upserted by the `slug` key. Edi
 - **`attachments`**: `id`, `user_id`, `message_id` (null until sent; cascades with the message), `kind` (`image`/`pdf`/`text`), `mime_type`, `filename`, `size_bytes`, `storage_key`, `extracted_text` (text/office files), `truncated`, `created_at`.
 - **`memory_items`**: `id`, `user_id`, `type` (`preference`/`fact`/`reminder`/`other`), `content` (≤ 2000 chars, ≤ 200 per user), `ai_generated`, `source_session_id`, timestamps.
 
-Later: `ask_history` (P3), `agent_runs` + `agent_run_events` (P4).
+Ask (P3) needs no table of its own: a question is a `chat_sessions` row with `kind = 'ask'`. Later: `agent_runs` + `agent_run_events` (P4).
 
 pg-boss keeps its own `pgboss` schema.
 
@@ -168,8 +170,11 @@ Request and response bodies are Zod schemas in `packages/shared`.
 | `GET /api/uploads/:id/content`, `DELETE /api/uploads/:id` | P2 | owner-only download (`nosniff`, sandbox CSP); delete while unsent |
 | `GET/PATCH /api/profile` | P2 | profile card, global prompt, AI memories toggle, default app, balances |
 | `GET/POST /api/memories`, `PATCH/DELETE /api/memories/:id` | P2 | memory items |
-| `POST /api/ask` (+ `GET /api/ask/:id/listen`) | P3 | one-shot Q&A |
-| `/api/iam/users`, `/api/iam/billing-accounts`, `/api/iam/models`, `/api/iam/usage(.csv)` | P3 | manager console |
+| `POST /api/ask`, `GET /api/ask/history`, `GET /api/ask/:id`, `GET /api/ask/:id/listen`, `DELETE /api/ask/:id` | P3 | one-shot Q&A as hidden `kind='ask'` sessions (see doc/wiki/ask.md) |
+| `GET /api/iam/users`, `PATCH /api/iam/users/:id` | P3 | search users; apps, manager flag, disable (with self-lockout guards) |
+| `GET/POST /api/iam/billing-accounts`, `GET/PATCH /api/iam/billing-accounts/:id`, `PUT/DELETE …/:id/members/:userId`, `POST …/:id/credit`, `GET …/:id/ledger(.csv)` | P3 | accounts, members, credit, ledger (keyset paging, CSV) |
+| `GET /api/iam/usage(.csv)?groupBy=user\|model&from&to&accountId` | P3 | usage reports |
+| `GET /api/iam/models`, `PATCH /api/iam/models/:id` | P3 | catalog editing (prices, retire, agent) |
 | `POST /api/agent-run`, `GET /api/agent-run/:id`, `GET /api/agent-run/:id/events`, `POST /api/agent-run/:id/cancel` | P4 | agent mode |
 
 ### post-message flow (P1)
@@ -359,3 +364,10 @@ Every account holder's display balance is `floor(balance_nano / 10⁷)` cents.
 | D20 | Uploads are stored first and linked in `post-message`; a daily pg-boss job (`cleanup-uploads`) deletes unsent uploads older than 24 h | Files show progress and errors before sending, and abandoned uploads don't pile up. |
 | D21 | Attachments are re-sent with their message on every later turn | The model keeps the context. Cost grows with history; a future option could drop old binaries. |
 | D22 | A default app of SimGen sends the user to `SIMGEN_URL` right after sign-in; `/` still resolves to an in-app page | SimGen is external. Redirecting on every visit to `/` would trap the user outside the app. |
+| D23 | An Ask question is a `chat_sessions` row with `kind='ask'`, not a separate table | Reuses post-message, the runner, SSE reconnect, billing and error states unchanged (study 0003). Kind-aware lookups keep chat and Ask apart. |
+| D24 | `ledger_entries.model_id` is set on every usage charge | Per-model usage reports, including title charges that have no message. Migration 0003 backfilled reply charges. |
+| D25 | `models.edited_at` marks IAM edits; `pnpm seed` skips edited rows unless `--force-models` | Manager price and id edits survive re-seeding, while untouched models still follow the config. |
+| D26 | Single tenant: managers administer all users and accounts. Guard rails: no self-disable or self-demotion, a personal account keeps its owner, and disabling revokes sessions | Matches the spec's org/shared accounts without adding tenancy. |
+| D27 | IAM credit input is USD with ≤ 2 decimals; grants > 0, adjustments ± (≠ 0), reason required. Report ranges are inclusive UTC days (default 30, max 366) | Predictable money entry, and date ranges that don't depend on the viewer's timezone. |
+| D28 | Ledger paging uses an opaque keyset cursor over the exact (microsecond) timestamp text + id | JS Dates only keep milliseconds, so a Date-based cursor could skip or repeat rows. |
+| D29 | CSV cells that start with `= + - @`, tab or CR get a leading `'`, except plain numbers | Blocks spreadsheet formula injection from user-supplied names and reasons, while negative amounts stay numeric. |
